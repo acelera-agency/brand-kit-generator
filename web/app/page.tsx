@@ -139,18 +139,16 @@ export default function Page() {
               inform a single decision.
             </p>
             <p className="text-muted-strong text-lg leading-relaxed mt-6">
-              You paid an agency, you got a 60-page deck with adjectives like
+              You paid an agency, got a 60-page deck full of adjectives like
               &quot;bold&quot; and &quot;trustworthy,&quot; and six months
-              later your team is still asking the founder how to write a cold
-              email. The kit didn&apos;t fail because the strategist was bad.
-              It failed because the format produces decoration, not a decision
-              tool.
+              later your team still asks the founder how to write a cold
+              email. The format produces decoration, not a decision tool.
             </p>
             <p className="text-muted-strong text-lg leading-relaxed mt-4">
               This generator produces the opposite: a kit that names what the
               brand is NOT, gives you do/don&apos;t phrases a stranger could
-              write a tweet from, and lays out non-negotiable rules per
-              surface. You can grade any new piece against it in 60 seconds.
+              write a tweet from, and lays down non-negotiable rules per
+              surface. You grade any new piece against it in 60 seconds.
             </p>
           </div>
         </div>
