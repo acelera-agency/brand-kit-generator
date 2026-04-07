@@ -168,7 +168,7 @@ export default function Page() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-rule border border-rule">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-rule border border-rule">
             {STAGES.map((s) => (
               <article
                 key={s.n}
