@@ -104,16 +104,15 @@ export default function Page() {
       {/* ============ HERO ============ */}
       <section className="container-brand pt-24 pb-32">
         <p className="eyebrow mb-6 block">
-          BRAND KIT GENERATOR · COMING SOON
+          OPEN SOURCE · COMING SOON
         </p>
         <h1 className="font-display font-semibold text-ink leading-[0.95] tracking-tightest text-[clamp(2.75rem,7vw,6rem)] max-w-[18ch]">
-          Brand kits that decide for you. Not decorate for you.
+          Brand kits that decide. Not decorate.
         </h1>
         <p className="font-display text-[clamp(1.25rem,2vw,1.75rem)] font-medium text-muted-strong leading-snug max-w-[42ch] mt-8">
-          An opinionated 8-stage interview that produces a kit you can use to
-          refuse projects, write outreach, and grade new copy. If your brand
-          isn&apos;t ready for the interview, we&apos;ll tell you in the first
-          5 minutes.
+          An 8-stage interview that produces a kit sharp enough to refuse
+          projects and grade new copy. If the answers are vague, the generator
+          pushes back — that&apos;s the point.
         </p>
         <div className="flex flex-wrap gap-3 mt-10">
           <a href="#waitlist" className="btn-primary">
