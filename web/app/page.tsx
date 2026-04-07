@@ -401,11 +401,30 @@ export default function Page() {
         <div className="container-brand py-24 grid grid-cols-1 lg:grid-cols-[88px_1fr] gap-8">
           <span className="section-num">06 / Pricing</span>
           <div>
-            <p className="font-display text-3xl text-ink leading-tight tracking-tight max-w-[28ch]">
+            <p className="eyebrow mb-3 block">Inside the hosted version</p>
+            <p className="font-display text-3xl text-ink leading-tight tracking-tight max-w-[28ch] mb-8">
               Pricing TBD. Waitlist members get early access and a discount on
               first launch.
             </p>
-            <p className="text-sm text-muted-strong mt-4 max-w-[55ch]">
+            <ul className="space-y-3 max-w-[50ch] mb-8">
+              <li className="flex gap-3 text-muted-strong">
+                <span className="text-accent font-mono mt-0.5">+</span>
+                <span>Live interview UI with real-time stage gating</span>
+              </li>
+              <li className="flex gap-3 text-muted-strong">
+                <span className="text-accent font-mono mt-0.5">+</span>
+                <span>Forbidden-words detection that refuses vague answers as you type</span>
+              </li>
+              <li className="flex gap-3 text-muted-strong">
+                <span className="text-accent font-mono mt-0.5">+</span>
+                <span>Markdown, PDF, and Notion export of the delivered kit</span>
+              </li>
+              <li className="flex gap-3 text-muted-strong">
+                <span className="text-accent font-mono mt-0.5">+</span>
+                <span>Optional 1:1 strategy session with the Acelera team</span>
+              </li>
+            </ul>
+            <p className="text-sm text-muted-strong max-w-[55ch]">
               We&apos;ll send one email when the hosted version is ready. No
               newsletter, no marketing sequence.
             </p>
