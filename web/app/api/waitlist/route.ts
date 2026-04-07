@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { Resend } from "resend";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const NOTIFY_TO = process.env.WAITLIST_NOTIFY_TO || "hello@acelera.agency";
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -25,12 +27,31 @@ export async function POST(request: Request) {
     );
   }
 
-  // TODO: wire up to a real provider before launch.
-  // Recommended: Resend (transactional email), Loops.so (waitlist),
-  // or a Notion DB via the official integration.
-  // For now we just log the submission so the form is functional during
-  // development and preview deployments.
-  console.log(`[waitlist] new signup: ${email}`);
+  if (!process.env.RESEND_API_KEY) {
+    // Local development without an API key — log and succeed so the form
+    // is still testable end-to-end.
+    console.log(`[waitlist] (no RESEND_API_KEY) signup: ${email}`);
+    return NextResponse.json({ ok: true });
+  }
+
+  // Lazy-instantiate so the module load doesn't crash when the env var
+  // is missing (e.g., during local dev or unrelated route handlers).
+  const resend = new Resend(process.env.RESEND_API_KEY);
+
+  try {
+    await resend.emails.send({
+      from: "Brand Kit Generator <onboarding@resend.dev>",
+      to: NOTIFY_TO,
+      subject: `New waitlist signup: ${email}`,
+      text: `${email} joined the brand-kit-generator waitlist.`,
+    });
+  } catch (err) {
+    console.error("[waitlist] resend error:", err);
+    return NextResponse.json(
+      { error: "Could not record signup. Please try again." },
+      { status: 500 },
+    );
+  }
 
   return NextResponse.json({ ok: true });
 }
