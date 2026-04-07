@@ -88,9 +88,17 @@ export default function Page() {
       {/* ============ TOPBAR ============ */}
       <header className="sticky top-0 z-50 bg-paper border-b border-rule">
         <div className="container-brand flex items-center justify-between py-4 font-mono text-xs uppercase tracking-widest text-muted gap-4">
-          <div className="flex items-center gap-3 text-ink font-medium">
-            <span className="inline-block w-2 h-2 bg-accent" />
-            Brand Kit Generator
+          <div className="flex items-center gap-4">
+            <a
+              href="https://acelera.agency"
+              className="hidden md:inline-flex items-center gap-1 hover:text-ink transition-colors"
+            >
+              ← Acelera
+            </a>
+            <div className="flex items-center gap-3 text-ink font-medium">
+              <span className="inline-block w-2 h-2 bg-accent" />
+              Brand Kit Generator
+            </div>
           </div>
           <nav className="hidden sm:flex gap-6">
             <a
