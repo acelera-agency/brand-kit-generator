@@ -69,6 +69,14 @@ const FAQ = [
     a: "You'll find out in Stage 0. If the contradiction isn't real yet, the generator will tell you to come back when it is — instead of producing a kit you'll throw away in 6 months.",
   },
   {
+    q: "What if I run the prompt and the generator refuses my answers?",
+    a: "That's the point. The pushback rules exist because vague answers produce decoration. Sharpen the answer or change the question — the gates are the part of the methodology you actually need.",
+  },
+  {
+    q: "Is the open-source prompt the same as what the SaaS will run?",
+    a: "Yes. The SaaS adds the UI, the multi-stage flow, the export, and the database — but the methodology is the prompt, and the prompt is open. You can run it manually today and use the hosted version when you want the structured experience.",
+  },
+  {
     q: "Who built this?",
     a: "Acelera, an agency that helps companies adopt AI in the processes where it actually changes the result of the business. The methodology was reverse-engineered from our own brand kit.",
   },
