@@ -32,15 +32,30 @@ them. Any new components must use the same tokens.
 Run: `curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000/`
 Expected: `200`
 
-**Step 2:** Verify build still passes
-Run: `cd web && npm run build`
-Expected: `✓ Compiled successfully` and 5 static pages generated
-
-**Step 3:** Verify git is clean
+**Step 2:** Verify git is clean
 Run: `cd brand-kit-generator && git status`
 Expected: `nothing to commit, working tree clean`
 
-If any of those fail, fix before starting Phase 1.
+**Step 3 (optional):** Verify production build still passes
+> ⚠️ **Do NOT run this while the dev server is up.** `next build` writes to
+> `.next/` and clobbers the dev server's compiled output, leaving the
+> running dev process serving a stale HTML that references CSS chunks that
+> no longer exist on disk (visible symptom: page loads "sin estilo" / 404
+> on `/_next/static/css/app/layout.css`).
+>
+> If you want this check, either (a) skip it and trust the dev server's
+> own compile, or (b) stop the dev server, run the build, then restart
+> `npm run dev`.
+
+To run it safely:
+```bash
+# In the terminal running `npm run dev`: Ctrl+C
+cd web && npm run build
+# Expected: ✓ Compiled successfully and 5 static pages generated
+npm run dev  # restart
+```
+
+If any of Steps 1-2 fail, fix before starting Phase 1.
 
 ---
 
