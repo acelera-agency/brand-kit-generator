@@ -349,13 +349,16 @@ git commit -m "feat(waitlist): add env var template"
 
 **Step 2:** Replace with Resend integration:
 
+> ⚠️ **Resend v6 constructor crashes on missing key.** Don't instantiate
+> the client at module top-level — `new Resend(undefined)` throws and
+> any unrelated request that touches the route file 500s. Lazy-create
+> the client *inside* the handler, after the env-var fallback returns.
+
 ```ts
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 const NOTIFY_TO = process.env.WAITLIST_NOTIFY_TO || "hello@acelera.agency";
 
 export async function POST(request: Request) {
@@ -387,6 +390,10 @@ export async function POST(request: Request) {
     console.log(`[waitlist] (no RESEND_API_KEY) signup: ${email}`);
     return NextResponse.json({ ok: true });
   }
+
+  // Lazy-instantiate so the module load doesn't crash when the env var
+  // is missing (e.g., during local dev or unrelated route handlers).
+  const resend = new Resend(process.env.RESEND_API_KEY);
 
   try {
     await resend.emails.send({
