@@ -303,6 +303,41 @@ export default function Page() {
               The same methodology. With a UI that pushes back in real time.
             </h2>
 
+            <div className="border border-rule mb-12 max-w-[55rem]">
+              <div className="grid grid-cols-2 font-mono text-[10px] uppercase tracking-widest border-b border-rule">
+                <div className="px-5 py-3 text-muted bg-paper-pure border-r border-rule">
+                  Most brand kit generators
+                </div>
+                <div className="px-5 py-3 text-accent">
+                  This one
+                </div>
+              </div>
+              <div className="grid grid-cols-2 border-b border-rule">
+                <div className="px-5 py-4 text-sm text-muted-strong line-through decoration-rule-strong bg-paper-pure border-r border-rule">
+                  5 questions on a single form
+                </div>
+                <div className="px-5 py-4 text-sm text-ink font-medium">
+                  80+ questions across 8 gated stages
+                </div>
+              </div>
+              <div className="grid grid-cols-2 border-b border-rule">
+                <div className="px-5 py-4 text-sm text-muted-strong line-through decoration-rule-strong bg-paper-pure border-r border-rule">
+                  60-page deck nobody opens
+                </div>
+                <div className="px-5 py-4 text-sm text-ink font-medium">
+                  Decision tool you grade new copy against
+                </div>
+              </div>
+              <div className="grid grid-cols-2">
+                <div className="px-5 py-4 text-sm text-muted-strong line-through decoration-rule-strong bg-paper-pure border-r border-rule">
+                  5-minute checkout flow
+                </div>
+                <div className="px-5 py-4 text-sm text-ink font-medium">
+                  90-minute interview that refuses vague answers
+                </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-[55rem]">
               <div className="border-t border-rule-strong pt-4">
                 <p className="font-mono text-xs uppercase tracking-widest text-accent mb-2">
