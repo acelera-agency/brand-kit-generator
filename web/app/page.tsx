@@ -255,21 +255,21 @@ export default function Page() {
       {/* ============ OPEN SOURCE BAND ============ */}
       <section className="border-t border-rule bg-ink text-paper">
         <div className="container-brand py-24 grid grid-cols-1 lg:grid-cols-[88px_1fr] gap-8">
-          <span className="font-mono text-xs uppercase tracking-widest text-paper/50 border-t border-paper/20 pt-2 inline-block">
+          <span className="font-mono text-xs uppercase tracking-widest text-paper/50 border-t border-paper/20 pt-2 inline-flex items-center gap-2">
+            <span className="inline-block w-1.5 h-1.5 bg-accent" />
             04 / Open source
           </span>
           <div>
-            <h2 className="font-display font-semibold text-[clamp(2rem,4vw,3.25rem)] leading-tight tracking-tight max-w-[18ch]">
+            <h2 className="font-display font-semibold text-[clamp(2.25rem,4.5vw,3.75rem)] leading-[0.98] tracking-tight max-w-[18ch]">
               The methodology is open source. The product runs it for you.
             </h2>
             <p className="text-paper/75 text-lg leading-relaxed mt-6 max-w-[55ch]">
               The full system prompt, the 8 stages, the pushback rules and the
-              calibration examples are all on GitHub under MIT. You can fork
-              it, run it manually, paste it into Claude or ChatGPT, or
-              translate it. The hosted version exists because most founders
-              don&apos;t want to set up an LLM session at 10pm — they want a
-              structured 90-minute interview with a tool that pushes back
-              when they get vague.
+              calibration examples are all on GitHub under MIT. Fork it, paste
+              it into Claude or ChatGPT, translate it. The hosted version
+              exists because most founders don&apos;t want to set up an LLM
+              session at 10pm — they want a structured 90-minute interview
+              with a tool that pushes back when they get vague.
             </p>
             <div className="flex flex-wrap gap-3 mt-10">
               <a
