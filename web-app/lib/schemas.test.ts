@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Stage0Schema, Stage1Schema, Stage2Schema, Stage3Schema, Stage4Schema } from "./schemas";
+import { Stage0Schema, Stage1Schema, Stage2Schema, Stage3Schema, Stage4Schema, Stage5Schema } from "./schemas";
 
 describe("Stage0Schema", () => {
   it("accepts a valid 3-sentence beforeAfter narrative", () => {
@@ -199,6 +199,81 @@ describe("Stage4Schema", () => {
             "They have already tried tooling without changing behavior.",
           ],
         },
+      },
+    });
+
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("Stage5Schema", () => {
+  const validVoice = {
+    voice: {
+      principles: [
+        "Lead with the operating truth, not the slogan.",
+        "Use verbs that imply action the client can repeat.",
+        "Prefer sharp contrast over soft positioning language.",
+      ],
+      do: [
+        "Say what gets easier after the engagement ends.",
+        "Use concrete nouns from the buyer's daily work.",
+        "State the tradeoff we are willing to make.",
+        "Write like an operator explaining a decision.",
+        "Name the specific behavior we refuse to reward.",
+      ],
+      dont: [
+        "Do not hide behind category jargon.",
+        "Do not promise speed without naming the cost.",
+        "Do not sound like a startup manifesto.",
+        "Do not use fluffy transformation language.",
+        "Do not write like the work disappears after launch.",
+      ],
+      writingRules: [
+        "Keep most sentences under 18 words.",
+        "Prefer verbs over abstract nouns.",
+        "Use plain English before imported jargon.",
+      ],
+      beforeAfter: [
+        { old: "We unlock innovation at scale.", new: "We build AI systems your team can actually run." },
+        { old: "We deliver digital transformation.", new: "We remove the bottleneck between decisions and execution." },
+        { old: "We create strategic clarity.", new: "We show who owns the next move and why." },
+      ],
+    },
+  };
+
+  it("accepts a usable voice constraints section", () => {
+    const result = Stage5Schema.safeParse(validVoice);
+
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects fewer than 3 principles", () => {
+    const result = Stage5Schema.safeParse({
+      voice: {
+        ...validVoice.voice,
+        principles: validVoice.voice.principles.slice(0, 2),
+      },
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects fewer than 5 do statements", () => {
+    const result = Stage5Schema.safeParse({
+      voice: {
+        ...validVoice.voice,
+        do: validVoice.voice.do.slice(0, 4),
+      },
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects fewer than 3 before/after examples", () => {
+    const result = Stage5Schema.safeParse({
+      voice: {
+        ...validVoice.voice,
+        beforeAfter: validVoice.voice.beforeAfter.slice(0, 2),
       },
     });
 

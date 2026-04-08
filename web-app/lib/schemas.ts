@@ -86,3 +86,27 @@ export const Stage4Schema = z.object({
 });
 
 export type Stage4 = z.infer<typeof Stage4Schema>;
+
+export const Stage5Schema = z.object({
+  voice: z.object({
+    principles: z
+      .array(z.string().min(8, "Each principle needs to be specific."))
+      .min(3, "Need at least 3 voice principles.")
+      .max(7, "Keep voice principles to 7 or fewer."),
+    do: z.array(z.string().min(8, "Each do statement needs to be specific.")).min(5, "Need at least 5 do statements."),
+    dont: z.array(z.string().min(8, "Each don't statement needs to be specific.")).min(5, "Need at least 5 don't statements."),
+    writingRules: z
+      .array(z.string().min(8, "Each writing rule needs to be specific."))
+      .min(3, "Need at least 3 writing rules."),
+    beforeAfter: z
+      .array(
+        z.object({
+          old: z.string().min(8, "The old example is too short."),
+          new: z.string().min(8, "The new example is too short."),
+        }),
+      )
+      .min(3, "Need at least 3 before/after examples."),
+  }),
+});
+
+export type Stage5 = z.infer<typeof Stage5Schema>;
