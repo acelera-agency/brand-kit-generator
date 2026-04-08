@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+const hasAtMostWords = (value: string, maxWords: number) =>
+  value
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length <= maxWords;
+
 export const Stage0Schema = z.object({
   beforeAfter: z
     .string()
@@ -20,3 +26,31 @@ export const Stage1Schema = z.object({
 });
 
 export type Stage1 = z.infer<typeof Stage1Schema>;
+
+export const Stage2Schema = z.object({
+  stack: z.object({
+    character: z
+      .string()
+      .min(3, "Character needs at least a short phrase.")
+      .max(50, "Character is too long.")
+      .refine((value) => hasAtMostWords(value, 10), {
+        message: "Character phrase must be 10 words or fewer.",
+      }),
+    promise: z
+      .string()
+      .min(3, "Promise needs at least a short phrase.")
+      .max(50, "Promise is too long.")
+      .refine((value) => hasAtMostWords(value, 10), {
+        message: "Promise phrase must be 10 words or fewer.",
+      }),
+    method: z
+      .string()
+      .min(3, "Method needs at least a short phrase.")
+      .max(50, "Method is too long.")
+      .refine((value) => hasAtMostWords(value, 10), {
+        message: "Method phrase must be 10 words or fewer.",
+      }),
+  }),
+});
+
+export type Stage2 = z.infer<typeof Stage2Schema>;
