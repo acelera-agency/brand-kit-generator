@@ -7,6 +7,7 @@ import {
   STAGE_ORDER,
   type StageId,
 } from "@/lib/stage-requirements";
+import type { BrandStage } from "@/lib/types";
 import { AssistantBubble } from "./AssistantBubble";
 import { StageHintCard } from "./StageHintCard";
 
@@ -18,6 +19,7 @@ type ChatMessage = {
 
 type Props = {
   kitId: string;
+  brandStage: BrandStage;
   initialMessages: ChatMessage[];
   initialStage: StageId;
   initialPassedCount: number;
@@ -38,6 +40,7 @@ function nextStage(s: StageId): StageId | null {
 
 export function InterviewChat({
   kitId,
+  brandStage,
   initialMessages,
   initialStage,
   initialPassedCount,
@@ -343,7 +346,7 @@ export function InterviewChat({
             </div>
           ) : (
             <div className="flex flex-col gap-4">
-              <StageHintCard stageId={currentStage} />
+              <StageHintCard stageId={currentStage} brandStage={brandStage} />
               <form onSubmit={handleSubmit} className="flex flex-col gap-3">
                 <label className="block">
                   <span className="font-mono text-xs uppercase tracking-widest text-muted">

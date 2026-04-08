@@ -1,11 +1,16 @@
-import { STAGE_REQUIREMENTS, type StageId } from "@/lib/stage-requirements";
+import {
+  getStageRequirement,
+  type StageId,
+} from "@/lib/stage-requirements";
+import type { BrandStage } from "@/lib/types";
 
 type Props = {
   stageId: StageId;
+  brandStage: BrandStage;
 };
 
-export function StageHintCard({ stageId }: Props) {
-  const req = STAGE_REQUIREMENTS[stageId];
+export function StageHintCard({ stageId, brandStage }: Props) {
+  const req = getStageRequirement(stageId, brandStage);
   return (
     <aside className="border border-rule-strong bg-paper-pure p-4 sm:p-5">
       <p className="font-mono text-xs uppercase tracking-widest text-accent">

@@ -1,45 +1,19 @@
-"use client";
+import Link from "next/link";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-
+/**
+ * Entry point for the create-kit flow. This used to POST directly to
+ * /api/kits/create, but now Phase B Batch 1 routes through /dashboard/new
+ * which lets the user pick brand_stage before the kit is materialized.
+ */
 export function StartKitButton() {
-  const router = useRouter();
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleClick() {
-    setPending(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/kits/create", { method: "POST" });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error ?? `Request failed (${res.status})`);
-      }
-      const { id } = await res.json();
-      router.push(`/interview/${id}`);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-      setPending(false);
-    }
-  }
-
   return (
     <div className="flex flex-col items-stretch gap-2 sm:items-end">
-      <button
-        type="button"
-        onClick={handleClick}
-        disabled={pending}
-        className="btn-primary px-5 py-3 text-sm sm:px-6 sm:py-3"
+      <Link
+        href="/dashboard/new"
+        className="btn-primary px-5 py-3 text-sm sm:px-6 sm:py-3 text-center"
       >
-        {pending ? "Creating…" : "Start a new kit"}
-      </button>
-      {error ? (
-        <p className="font-mono text-xs uppercase tracking-widest text-signal">
-          {error}
-        </p>
-      ) : null}
+        Start a new kit
+      </Link>
     </div>
   );
 }
