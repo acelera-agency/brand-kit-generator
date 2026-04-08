@@ -156,3 +156,55 @@ export const Stage6Schema = z.object({
 });
 
 export type Stage6 = z.infer<typeof Stage6Schema>;
+
+const PaletteRoleSchema = z.enum([
+  "primary",
+  "secondary",
+  "background",
+  "accent",
+  "neutral",
+]);
+
+const TypographySourceSchema = z.enum(["google", "adobe", "self-hosted"]);
+
+const TypographyFamilySchema = z.object({
+  family: z.string().min(2, "Font family name is too short."),
+  weights: z.array(z.number().int().positive()).min(1, "Need at least 1 font weight."),
+  source: TypographySourceSchema,
+  url: z.string().url("Typography URL must be valid.").optional(),
+});
+
+export const Stage7Schema = z.object({
+  visual: z.object({
+    palette: z
+      .array(
+        z.object({
+          name: z.string().min(2, "Palette token name is too short."),
+          hex: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Palette hex must be a 6-digit hex color."),
+          role: PaletteRoleSchema,
+          narrative: z.string().min(8, "Palette narrative is too short.").optional(),
+        }),
+      )
+      .min(1, "Need at least 1 palette token.")
+      .max(7, "Palette is capped at 7 tokens."),
+    typography: z.object({
+      display: TypographyFamilySchema,
+      body: TypographyFamilySchema,
+      mono: TypographyFamilySchema.optional(),
+    }),
+    characteristicComponents: z
+      .array(
+        z.object({
+          name: z.string().min(2, "Component name is too short."),
+          description: z.string().min(8, "Component description is too short."),
+        }),
+      )
+      .min(3, "Need at least 3 characteristic components."),
+    forbiddenVisuals: z
+      .array(z.string().min(8, "Forbidden visual note is too short."))
+      .min(6, "Need at least 6 forbidden visuals."),
+    logoDirection: z.string().min(20, "Logo direction needs more detail."),
+  }),
+});
+
+export type Stage7 = z.infer<typeof Stage7Schema>;

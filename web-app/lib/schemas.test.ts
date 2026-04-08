@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Stage0Schema, Stage1Schema, Stage2Schema, Stage3Schema, Stage4Schema, Stage5Schema, Stage6Schema } from "./schemas";
+import { Stage0Schema, Stage1Schema, Stage2Schema, Stage3Schema, Stage4Schema, Stage5Schema, Stage6Schema, Stage7Schema } from "./schemas";
 
 describe("Stage0Schema", () => {
   it("accepts a valid 3-sentence beforeAfter narrative", () => {
@@ -357,6 +357,93 @@ describe("Stage6Schema", () => {
           twitter:
             "This version is intentionally much longer than a practical X bio because it keeps stacking extra clauses until it breaks the 160 character limit that the template should respect.",
         },
+      },
+    });
+
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("Stage7Schema", () => {
+  const validVisual = {
+    visual: {
+      palette: [
+        { name: "Graphite", hex: "#111827", role: "primary", narrative: "Main editorial ink." },
+        { name: "Bone", hex: "#F3EFE5", role: "background", narrative: "Paper-like base." },
+        { name: "Verdant", hex: "#1F6E5A", role: "secondary", narrative: "Signals operating confidence." },
+        { name: "Alert Rust", hex: "#B45309", role: "accent", narrative: "Reserved for alerts only." },
+        { name: "Mist", hex: "#D1D5DB", role: "neutral", narrative: "Quiet support color." },
+      ],
+      typography: {
+        display: {
+          family: "Inter Tight",
+          weights: [500, 600, 700],
+          source: "google",
+        },
+        body: {
+          family: "Inter",
+          weights: [400, 500, 600],
+          source: "google",
+        },
+        mono: {
+          family: "JetBrains Mono",
+          weights: [400, 500],
+          source: "google",
+        },
+      },
+      characteristicComponents: [
+        { name: "Metric tags", description: "Numbers sit inside uppercase mono tags." },
+        { name: "Citation rails", description: "Customer proof appears as margin citations." },
+        { name: "Comparison grids", description: "Before/after decisions use ruled comparison tables." },
+      ],
+      forbiddenVisuals: [
+        "No robots or circuit-board iconography.",
+        "No isometric dashboard mockups.",
+        "No neon gradients without a hard reason.",
+        "No stock handshakes or team huddles.",
+        "No floating UI cards with generic metrics.",
+        "No glossy 3D blobs.",
+      ],
+      logoDirection: "Wordmark with a compressed crossbar detail that feels editorial, not startup-tech.",
+    },
+  };
+
+  it("accepts a complete visual direction", () => {
+    const result = Stage7Schema.safeParse(validVisual);
+
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects invalid palette hex values", () => {
+    const result = Stage7Schema.safeParse({
+      visual: {
+        ...validVisual.visual,
+        palette: [
+          { ...validVisual.visual.palette[0], hex: "111827" },
+          ...validVisual.visual.palette.slice(1),
+        ],
+      },
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects fewer than 3 characteristic components", () => {
+    const result = Stage7Schema.safeParse({
+      visual: {
+        ...validVisual.visual,
+        characteristicComponents: validVisual.visual.characteristicComponents.slice(0, 2),
+      },
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects fewer than 6 forbidden visuals", () => {
+    const result = Stage7Schema.safeParse({
+      visual: {
+        ...validVisual.visual,
+        forbiddenVisuals: validVisual.visual.forbiddenVisuals.slice(0, 5),
       },
     });
 
