@@ -1,7 +1,15 @@
+/**
+ * Where the founder is in their brand journey. Drives which question variants
+ * the interview asks (past-tense for 'existing', present/future for 'new')
+ * and which gate-check anti-fabrication rules apply.
+ */
+export type BrandStage = "new" | "existing";
+
 export interface BrandKit {
   id: string;
   ownerId: string;
   status: "draft" | "completed" | "published";
+  brandStage: BrandStage;
   createdAt: Date;
   updatedAt: Date;
   stageProgress: Record<`stage_${0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8}`, "empty" | "in-progress" | "passed">;
