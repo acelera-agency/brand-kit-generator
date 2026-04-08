@@ -1,0 +1,15 @@
+# Git worktrees (per-feature isolated workspaces)
+.worktrees/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Env files at root level (web/ has its own)
+.env
+.env.local
