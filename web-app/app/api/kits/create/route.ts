@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerClient } from "@/lib/supabase";
+import type { BrandStage } from "@/lib/types";
 
 export const runtime = "nodejs";
 
@@ -15,13 +16,40 @@ const STAGE_IDS = [
   "stage_8",
 ] as const;
 
-export async function POST() {
+const ALLOWED_BRAND_STAGES: ReadonlySet<BrandStage> = new Set(["new", "existing"]);
+
+function isBrandStage(value: unknown): value is BrandStage {
+  return typeof value === "string" && ALLOWED_BRAND_STAGES.has(value as BrandStage);
+}
+
+export async function POST(req: NextRequest) {
   const supabase = await getServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Body is optional for backwards compatibility — old clients without the
+  // wizard would POST with no body, and we default to 'new' (the most
+  // conservative choice — the stricter anti-fabrication gate-check rules
+  // apply rather than the looser existing-brand ones).
+  let brandStage: BrandStage = "new";
+  try {
+    const body = await req.json();
+    if (body && typeof body === "object" && "brandStage" in body) {
+      const candidate = (body as { brandStage: unknown }).brandStage;
+      if (!isBrandStage(candidate)) {
+        return NextResponse.json(
+          { error: `Invalid brandStage: must be 'new' or 'existing'` },
+          { status: 400 },
+        );
+      }
+      brandStage = candidate;
+    }
+  } catch {
+    // No body or invalid JSON — fall through to default 'new'.
   }
 
   // Create the kit row
@@ -31,6 +59,7 @@ export async function POST() {
       owner_id: user.id,
       status: "draft",
       kit: {},
+      brand_stage: brandStage,
     })
     .select("id")
     .single();

@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { getOpenAI, MODEL_INTERVIEW } from "@/lib/openai";
 import { buildInterviewMessages } from "@/lib/interview-prompt";
 import { getServerClient } from "@/lib/supabase";
+import type { BrandStage } from "@/lib/types";
 
 // Force Node.js runtime — the OpenAI SDK uses Node APIs that don't work in Edge.
 export const runtime = "nodejs";
@@ -32,15 +33,16 @@ export async function POST(req: NextRequest) {
     return new Response("Missing kitId or message", { status: 400 });
   }
 
-  // Verify the kit belongs to the user
+  // Verify the kit belongs to the user and load its brand_stage
   const { data: kit, error: kitErr } = await supabase
     .from("brand_kits")
-    .select("id, owner_id")
+    .select("id, owner_id, brand_stage")
     .eq("id", kitId)
     .single();
   if (kitErr || !kit || kit.owner_id !== user.id) {
     return new Response("Forbidden", { status: 403 });
   }
+  const brandStage = (kit.brand_stage as BrandStage | null) ?? "new";
 
   // Determine current stage (the one marked in-progress, fallback stage_0)
   const { data: progress } = await supabase
@@ -73,6 +75,7 @@ export async function POST(req: NextRequest) {
 
   const messages = buildInterviewMessages({
     currentStageId,
+    brandStage,
     conversationHistory,
   });
 

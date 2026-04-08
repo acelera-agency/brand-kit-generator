@@ -13,7 +13,8 @@ import {
   Stage7Schema,
   Stage8Schema,
 } from "@/lib/schemas";
-import { STAGE_REQUIREMENTS, type StageId } from "@/lib/stage-requirements";
+import { getStageRequirement, type StageId } from "@/lib/stage-requirements";
+import type { BrandStage } from "@/lib/types";
 
 export const runtime = "nodejs";
 
@@ -72,17 +73,18 @@ export async function POST(req: NextRequest) {
   }
 
   const schema = STAGE_SCHEMAS[stageId];
-  const requirement = STAGE_REQUIREMENTS[stageId];
 
-  // Verify ownership
+  // Verify ownership and load brand_stage
   const { data: kit, error: kitErr } = await supabase
     .from("brand_kits")
-    .select("id, owner_id, kit")
+    .select("id, owner_id, kit, brand_stage")
     .eq("id", kitId)
     .single();
   if (kitErr || !kit || kit.owner_id !== user.id) {
     return new Response("Forbidden", { status: 403 });
   }
+  const brandStage = (kit.brand_stage as BrandStage | null) ?? "new";
+  const requirement = getStageRequirement(stageId, brandStage);
 
   // Load conversation messages for this specific stage
   const { data: messages } = await supabase
