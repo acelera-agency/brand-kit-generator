@@ -1,20 +1,9 @@
 import { redirect, notFound } from "next/navigation";
 import { getServerClient } from "@/lib/supabase";
+import { STAGE_ORDER } from "@/lib/stage-requirements";
 import { InterviewChat } from "./InterviewChat";
 
 export const dynamic = "force-dynamic";
-
-const STAGE_ORDER = [
-  "stage_0",
-  "stage_1",
-  "stage_2",
-  "stage_3",
-  "stage_4",
-  "stage_5",
-  "stage_6",
-  "stage_7",
-  "stage_8",
-] as const;
 
 type StoredMessage = {
   id: string;

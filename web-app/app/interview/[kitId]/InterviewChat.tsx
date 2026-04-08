@@ -2,32 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-
-const STAGE_ORDER = [
-  "stage_0",
-  "stage_1",
-  "stage_2",
-  "stage_3",
-  "stage_4",
-  "stage_5",
-  "stage_6",
-  "stage_7",
-  "stage_8",
-] as const;
-
-type StageId = (typeof STAGE_ORDER)[number];
-
-const STAGE_LABELS: Record<StageId, string> = {
-  stage_0: "Context & contradiction",
-  stage_1: "Enemy",
-  stage_2: "Three-layer stack",
-  stage_3: "Anti-positioning",
-  stage_4: "ICP signals",
-  stage_5: "Voice constraints",
-  stage_6: "Application templates",
-  stage_7: "Visual direction",
-  stage_8: "Non-negotiable rules",
-};
+import {
+  STAGE_LABELS,
+  STAGE_ORDER,
+  type StageId,
+} from "@/lib/stage-requirements";
+import { AssistantBubble } from "./AssistantBubble";
+import { StageHintCard } from "./StageHintCard";
 
 type ChatMessage = {
   id: string;
@@ -64,6 +45,7 @@ export function InterviewChat({
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
+  const [gateChecking, setGateChecking] = useState(false);
   const [currentStage, setCurrentStage] = useState<StageId>(initialStage);
   const [passedCount, setPassedCount] = useState(initialPassedCount);
   const [toast, setToast] = useState<ToastState>(null);
@@ -77,18 +59,19 @@ export function InterviewChat({
     });
   }, [messages]);
 
-  // Auto-dismiss toasts after 4s
+  // Auto-dismiss toasts after 5s
   useEffect(() => {
     if (!toast) return;
-    const t = setTimeout(() => setToast(null), 4000);
+    const t = setTimeout(() => setToast(null), 5000);
     return () => clearTimeout(t);
   }, [toast]);
 
   const isComplete = passedCount >= 9;
+  const busy = streaming || gateChecking;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!input.trim() || streaming || isComplete) return;
+    if (!input.trim() || busy || isComplete) return;
 
     const userMessage: ChatMessage = {
       id: `local-${Date.now()}`,
@@ -104,9 +87,9 @@ export function InterviewChat({
     setMessages((prev) => [...prev, userMessage, assistantPlaceholder]);
     setInput("");
     setStreaming(true);
+    setToast(null);
 
     try {
-      // Open the SSE stream
       const res = await fetch("/api/interview/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -130,7 +113,6 @@ export function InterviewChat({
         }
         buffer += decoder.decode(value, { stream: true });
 
-        // Parse SSE events: blocks separated by "\n\n", each line "data: ..."
         let sepIdx;
         while ((sepIdx = buffer.indexOf("\n\n")) !== -1) {
           const rawEvent = buffer.slice(0, sepIdx);
@@ -150,7 +132,6 @@ export function InterviewChat({
                 throw new Error(evt.error);
               }
               if (evt.delta) {
-                // Append delta to the last assistant message
                 setMessages((prev) => {
                   const copy = [...prev];
                   const lastIdx = copy.length - 1;
@@ -173,7 +154,10 @@ export function InterviewChat({
         }
       }
 
-      // Stream complete — now check the gate
+      // Stream complete — turn off cursor, turn on gate-check indicator
+      setStreaming(false);
+      setGateChecking(true);
+
       const gateRes = await fetch("/api/interview/check-gate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -182,28 +166,20 @@ export function InterviewChat({
 
       const gateBody = (await gateRes.json()) as {
         passed: boolean;
-        error?: string;
+        reason?: string;
         validationErrors?: Array<{ path: string; message: string }>;
       };
 
       if (gateBody.passed) {
         const advanced = nextStage(currentStage);
-        const newPassed = passedCount + 1;
-        setPassedCount(newPassed);
+        setPassedCount((prev) => prev + 1);
         setToast({ kind: "passed", stage: currentStage });
-
-        if (advanced) {
-          setCurrentStage(advanced);
-          // Mark the next stage as in-progress so persistence picks it up
-          // on next reload. (Server-side fallback covers this too.)
-        }
+        if (advanced) setCurrentStage(advanced);
       } else {
-        const reason =
-          gateBody.error ??
-          (gateBody.validationErrors?.length
-            ? `Missing: ${gateBody.validationErrors.map((v) => v.path).join(", ")}`
-            : "Stage gate not yet met. Keep going.");
-        setToast({ kind: "failed", reason });
+        setToast({
+          kind: "failed",
+          reason: gateBody.reason ?? "Keep going — the stage isn't passing yet.",
+        });
       }
     } catch (err) {
       console.error("[interview] submit failed", err);
@@ -213,6 +189,7 @@ export function InterviewChat({
       });
     } finally {
       setStreaming(false);
+      setGateChecking(false);
     }
   }
 
@@ -228,6 +205,12 @@ export function InterviewChat({
             <h1 className="mt-1 font-display text-2xl font-semibold tracking-tight text-ink">
               {STAGE_LABELS[currentStage]}
             </h1>
+            {gateChecking ? (
+              <p className="mt-2 font-mono text-xs uppercase tracking-widest text-accent flex items-center gap-2">
+                <span className="inline-block h-2 w-2 rounded-full bg-accent animate-pulse" />
+                Checking your answer…
+              </p>
+            ) : null}
           </div>
           <div className="flex items-center gap-3">
             <p className="font-mono text-xs uppercase tracking-widest text-muted">
@@ -306,43 +289,44 @@ export function InterviewChat({
                 Start when you&apos;re ready.
               </h2>
               <p className="mx-auto mt-3 max-w-[48ch] text-sm text-muted-strong">
-                The interview takes 60 to 90 minutes. Type your first answer
-                below — say hi, or describe what your brand is right now.
+                The interview takes 60 to 90 minutes. Read the hint card below
+                — then type your first answer in your own voice.
               </p>
             </div>
           ) : (
             <ul className="space-y-6">
-              {messages.map((m) => (
-                <li
-                  key={m.id}
-                  className={`${
-                    m.role === "user" ? "ml-12" : "mr-12"
-                  }`}
-                >
-                  <div
-                    className={`border p-4 ${
-                      m.role === "user"
-                        ? "border-rule-strong bg-paper-pure text-ink"
-                        : "border-rule bg-paper text-ink"
-                    }`}
-                  >
-                    <p className="mb-2 font-mono text-xs uppercase tracking-widest text-muted">
-                      {m.role === "user" ? "You" : "Generator"}
-                    </p>
-                    <div className="whitespace-pre-wrap text-sm leading-relaxed sm:text-base">
-                      {m.content || (
-                        <span className="text-muted">…</span>
-                      )}
-                    </div>
-                  </div>
-                </li>
-              ))}
+              {messages.map((m, idx) => {
+                if (m.role === "user") {
+                  return (
+                    <li key={m.id} className="ml-12">
+                      <div className="border border-rule-strong bg-paper-pure p-4 text-ink">
+                        <p className="mb-2 font-mono text-xs uppercase tracking-widest text-muted">
+                          You
+                        </p>
+                        <div className="whitespace-pre-wrap text-sm leading-relaxed sm:text-base">
+                          {m.content}
+                        </div>
+                      </div>
+                    </li>
+                  );
+                }
+                const isLastAssistant =
+                  idx === messages.length - 1 && m.role === "assistant";
+                return (
+                  <li key={m.id}>
+                    <AssistantBubble
+                      content={m.content}
+                      streaming={streaming && isLastAssistant}
+                    />
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
       </div>
 
-      {/* Input */}
+      {/* Input area */}
       <div className="border-t border-rule bg-paper-pure">
         <div className="container-brand mx-auto max-w-[80ch] py-5">
           {isComplete ? (
@@ -358,43 +342,52 @@ export function InterviewChat({
               </Link>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-              <label className="block">
-                <span className="font-mono text-xs uppercase tracking-widest text-muted">
-                  Your answer
-                </span>
-                <textarea
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  disabled={streaming}
-                  rows={3}
-                  placeholder={
-                    streaming
-                      ? "Generator is responding…"
-                      : "Type your answer. Be specific. The generator will push back if you're vague."
-                  }
-                  className="mt-2 w-full resize-none border border-rule-strong bg-paper-pure px-4 py-3 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:border-accent disabled:opacity-50 sm:text-base"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                      e.preventDefault();
-                      handleSubmit(e);
+            <div className="flex flex-col gap-4">
+              <StageHintCard stageId={currentStage} />
+              <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+                <label className="block">
+                  <span className="font-mono text-xs uppercase tracking-widest text-muted">
+                    Your answer
+                  </span>
+                  <textarea
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    disabled={busy}
+                    rows={3}
+                    placeholder={
+                      streaming
+                        ? "Generator is responding…"
+                        : gateChecking
+                          ? "Checking…"
+                          : "Type your answer. Be specific. The generator will push back if you're vague."
                     }
-                  }}
-                />
-              </label>
-              <div className="flex items-center justify-between gap-3">
-                <p className="font-mono text-xs text-muted">
-                  ⌘/Ctrl + Enter to send
-                </p>
-                <button
-                  type="submit"
-                  disabled={streaming || !input.trim()}
-                  className="btn-primary px-5 py-2 text-sm"
-                >
-                  {streaming ? "Sending…" : "Send"}
-                </button>
-              </div>
-            </form>
+                    className="mt-2 w-full resize-none border border-rule-strong bg-paper-pure px-4 py-3 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:border-accent disabled:opacity-50 sm:text-base"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                        e.preventDefault();
+                        handleSubmit(e);
+                      }
+                    }}
+                  />
+                </label>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-mono text-xs text-muted">
+                    ⌘/Ctrl + Enter to send
+                  </p>
+                  <button
+                    type="submit"
+                    disabled={busy || !input.trim()}
+                    className="btn-primary px-5 py-2 text-sm"
+                  >
+                    {streaming
+                      ? "Streaming…"
+                      : gateChecking
+                        ? "Checking…"
+                        : "Send"}
+                  </button>
+                </div>
+              </form>
+            </div>
           )}
         </div>
       </div>
