@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Stage0Schema, Stage1Schema, Stage2Schema, Stage3Schema } from "./schemas";
+import { Stage0Schema, Stage1Schema, Stage2Schema, Stage3Schema, Stage4Schema } from "./schemas";
 
 describe("Stage0Schema", () => {
   it("accepts a valid 3-sentence beforeAfter narrative", () => {
@@ -124,6 +124,82 @@ describe("Stage3Schema", () => {
         { statement: "We are not a cheap pilot shop.", cost: "It disqualifies buyers who only want experimentation theater." },
         { statement: "We are not a ghost team behind your AI.", cost: "" },
       ],
+    });
+
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("Stage4Schema", () => {
+  it("accepts 4 qualifying signals", () => {
+    const result = Stage4Schema.safeParse({
+      icp: {
+        primary: {
+          signals: [
+            "They own a messy handoff between sales and delivery.",
+            "They can name the internal metric they need to shrink.",
+            "They ask how the team will keep the system after launch.",
+            "They have already tried tooling without changing behavior.",
+          ],
+        },
+      },
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects only 3 primary signals", () => {
+    const result = Stage4Schema.safeParse({
+      icp: {
+        primary: {
+          signals: [
+            "They own a messy handoff between sales and delivery.",
+            "They can name the internal metric they need to shrink.",
+            "They ask how the team will keep the system after launch.",
+          ],
+        },
+      },
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts an optional secondary ICP", () => {
+    const result = Stage4Schema.safeParse({
+      icp: {
+        primary: {
+          signals: [
+            "They own a messy handoff between sales and delivery.",
+            "They can name the internal metric they need to shrink.",
+            "They ask how the team will keep the system after launch.",
+            "They have already tried tooling without changing behavior.",
+          ],
+        },
+        secondary: {
+          role: "Head of Revenue Operations",
+          signals: [
+            "They care about proof the process survives after the vendor leaves.",
+            "They ask for examples of internal adoption, not just deployment.",
+          ],
+        },
+      },
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects empty signals", () => {
+    const result = Stage4Schema.safeParse({
+      icp: {
+        primary: {
+          signals: [
+            "",
+            "They can name the internal metric they need to shrink.",
+            "They ask how the team will keep the system after launch.",
+            "They have already tried tooling without changing behavior.",
+          ],
+        },
+      },
     });
 
     expect(result.success).toBe(false);

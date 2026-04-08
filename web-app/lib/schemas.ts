@@ -67,3 +67,22 @@ export const Stage3Schema = z.object({
 });
 
 export type Stage3 = z.infer<typeof Stage3Schema>;
+
+export const Stage4Schema = z.object({
+  icp: z.object({
+    primary: z.object({
+      signals: z
+        .array(z.string().min(8, "Each signal needs to be specific."))
+        .min(4, "Need at least 4 behavioral signals.")
+        .max(6, "Keep the primary ICP to 6 signals or fewer."),
+    }),
+    secondary: z
+      .object({
+        role: z.string().min(1, "Secondary ICP needs a role."),
+        signals: z.array(z.string().min(8, "Each signal needs to be specific.")),
+      })
+      .optional(),
+  }),
+});
+
+export type Stage4 = z.infer<typeof Stage4Schema>;
