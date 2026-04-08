@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Stage0Schema, Stage1Schema, Stage2Schema } from "./schemas";
+import { Stage0Schema, Stage1Schema, Stage2Schema, Stage3Schema } from "./schemas";
 
 describe("Stage0Schema", () => {
   it("accepts a valid 3-sentence beforeAfter narrative", () => {
@@ -81,6 +81,49 @@ describe("Stage2Schema", () => {
         promise: "Capability your team can keep",
         method: "Partner-built systems",
       },
+    });
+
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("Stage3Schema", () => {
+  it("accepts 5 valid anti-positioning statements", () => {
+    const result = Stage3Schema.safeParse({
+      antiPositioning: [
+        { statement: "We are not an outsourced content mill.", cost: "It turns away volume retainers." },
+        { statement: "We are not a dashboard-deck agency.", cost: "It narrows the pipeline to operator-led buyers." },
+        { statement: "We are not a strategy PDF factory.", cost: "It forces deeper delivery involvement from partners." },
+        { statement: "We are not a cheap pilot shop.", cost: "It disqualifies buyers who only want experimentation theater." },
+        { statement: "We are not a ghost team behind your AI.", cost: "It means some clients will choose easier vendor lock-in." },
+      ],
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects only 4 items", () => {
+    const result = Stage3Schema.safeParse({
+      antiPositioning: [
+        { statement: "We are not an outsourced content mill.", cost: "It turns away volume retainers." },
+        { statement: "We are not a dashboard-deck agency.", cost: "It narrows the pipeline to operator-led buyers." },
+        { statement: "We are not a strategy PDF factory.", cost: "It forces deeper delivery involvement from partners." },
+        { statement: "We are not a cheap pilot shop.", cost: "It disqualifies buyers who only want experimentation theater." },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects items without a cost", () => {
+    const result = Stage3Schema.safeParse({
+      antiPositioning: [
+        { statement: "We are not an outsourced content mill.", cost: "It turns away volume retainers." },
+        { statement: "We are not a dashboard-deck agency.", cost: "It narrows the pipeline to operator-led buyers." },
+        { statement: "We are not a strategy PDF factory.", cost: "It forces deeper delivery involvement from partners." },
+        { statement: "We are not a cheap pilot shop.", cost: "It disqualifies buyers who only want experimentation theater." },
+        { statement: "We are not a ghost team behind your AI.", cost: "" },
+      ],
     });
 
     expect(result.success).toBe(false);

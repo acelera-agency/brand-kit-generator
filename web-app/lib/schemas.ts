@@ -54,3 +54,16 @@ export const Stage2Schema = z.object({
 });
 
 export type Stage2 = z.infer<typeof Stage2Schema>;
+
+export const Stage3Schema = z.object({
+  antiPositioning: z
+    .array(
+      z.object({
+        statement: z.string().min(8, "Each anti-positioning line needs a real statement."),
+        cost: z.string().min(8, "Each anti-positioning line needs a concrete cost."),
+      }),
+    )
+    .min(5, "Need at least 5 anti-positioning statements."),
+});
+
+export type Stage3 = z.infer<typeof Stage3Schema>;
