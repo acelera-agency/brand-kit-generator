@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Stage0Schema } from "./schemas";
+import { Stage0Schema, Stage1Schema } from "./schemas";
 
 describe("Stage0Schema", () => {
   it("accepts a valid 3-sentence beforeAfter narrative", () => {
@@ -19,6 +19,31 @@ describe("Stage0Schema", () => {
 
   it("rejects a beforeAfter that is too short", () => {
     const result = Stage0Schema.safeParse({ beforeAfter: "Short." });
+
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("Stage1Schema", () => {
+  it("accepts a sharp single-sentence enemy", () => {
+    const result = Stage1Schema.safeParse({
+      enemy: "We exist because too many agencies sell strategy nobody can operate.",
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects an empty enemy", () => {
+    const result = Stage1Schema.safeParse({ enemy: "" });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a multi-paragraph enemy", () => {
+    const result = Stage1Schema.safeParse({
+      enemy:
+        "We exist because too many AI vendors create dependency instead of capability.\n\nThat second paragraph turns the enemy into a mini-essay.",
+    });
 
     expect(result.success).toBe(false);
   });
