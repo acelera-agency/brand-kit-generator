@@ -2,20 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  body {
+    @apply bg-paper text-ink font-body;
+    font-feature-settings: "kern", "ss01", "cv11";
+    font-size: 17px;
+    line-height: 1.55;
+  }
+
+  ::selection {
+    @apply bg-accent text-paper;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display text-ink;
+    line-height: 1.1;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  .container-brand {
+    @apply mx-auto w-full max-w-container px-6 sm:px-10 lg:px-16;
+  }
+
+  .section-num {
+    @apply font-mono text-xs uppercase text-muted tracking-widest border-t border-rule-strong pt-2 inline-block;
+  }
+
+  .eyebrow {
+    @apply font-mono text-xs uppercase tracking-widest text-accent;
+  }
+
+  .process-tag {
+    @apply font-mono text-[11px] uppercase tracking-widest px-3 py-2 border border-rule-strong text-ink bg-paper;
+  }
+
+  .process-tag-active {
+    @apply border-accent text-accent bg-accent-soft;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center bg-ink text-paper font-mono text-xs uppercase tracking-widest px-6 py-4 hover:bg-ink-deep transition-colors;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center text-ink font-mono text-xs uppercase tracking-widest px-6 py-4 border border-rule-strong hover:bg-paper-pure transition-colors;
+  }
 }
