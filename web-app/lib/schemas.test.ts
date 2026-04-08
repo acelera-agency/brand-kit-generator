@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Stage0Schema, Stage1Schema, Stage2Schema, Stage3Schema, Stage4Schema, Stage5Schema } from "./schemas";
+import { Stage0Schema, Stage1Schema, Stage2Schema, Stage3Schema, Stage4Schema, Stage5Schema, Stage6Schema } from "./schemas";
 
 describe("Stage0Schema", () => {
   it("accepts a valid 3-sentence beforeAfter narrative", () => {
@@ -274,6 +274,89 @@ describe("Stage5Schema", () => {
       voice: {
         ...validVoice.voice,
         beforeAfter: validVoice.voice.beforeAfter.slice(0, 2),
+      },
+    });
+
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("Stage6Schema", () => {
+  const validTemplates = {
+    templates: {
+      homepageHero: {
+        eyebrow: "AI operations for service firms",
+        h1: "Operator-led strategy your team can keep",
+        subhead: "We replace vendor dependency with systems your team can run after handoff.",
+        ctaVariants: ["See the operator audit", "Book a working session"],
+      },
+      coldOutreach: {
+        subjects: [
+          "Your handoff problem looks expensive",
+          "A better way to keep the system after launch",
+          "If there is no clear fit, I will say so",
+        ],
+        body:
+          "Hi [Name],\n\nI noticed your team is adding AI into delivery while sales still frames it as a feature. We help service firms close that gap with systems operators can actually keep.\n\nTwo places we usually help: tightening the first handoff from sales to delivery, and making ownership explicit before automation spreads. If I do not see a clear case here, I will tell you and not insist.",
+        signOff: "Francisco\nAcelera",
+      },
+      socialBios: {
+        linkedin: "We build operator-led AI systems for service firms that need capability after the vendor leaves.",
+        twitter: "Operator-led AI systems for service firms. Built to survive after handoff.",
+        instagram: "Operator-led AI systems for service firms that want capability, not dependency.",
+      },
+      firstMinute: {
+        script:
+          "We help service firms build AI they can run without the vendor. We do that by making ownership explicit, tightening the handoff between teams, and refusing dashboard theater. Before I talk more, tell me where the current process breaks.",
+        wordCount: 39,
+      },
+      emailSignature: "Francisco Segovia | Founder | Capability your team can keep | francisco@acelera.agency",
+    },
+  };
+
+  it("accepts a complete set of application templates", () => {
+    const result = Stage6Schema.safeParse(validTemplates);
+
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects homepage heroes without 2 CTAs", () => {
+    const result = Stage6Schema.safeParse({
+      templates: {
+        ...validTemplates.templates,
+        homepageHero: {
+          ...validTemplates.templates.homepageHero,
+          ctaVariants: ["See the operator audit"],
+        },
+      },
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects outreach without 3 subject variants", () => {
+    const result = Stage6Schema.safeParse({
+      templates: {
+        ...validTemplates.templates,
+        coldOutreach: {
+          ...validTemplates.templates.coldOutreach,
+          subjects: validTemplates.templates.coldOutreach.subjects.slice(0, 2),
+        },
+      },
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects social bios that exceed channel limits", () => {
+    const result = Stage6Schema.safeParse({
+      templates: {
+        ...validTemplates.templates,
+        socialBios: {
+          ...validTemplates.templates.socialBios,
+          twitter:
+            "This version is intentionally much longer than a practical X bio because it keeps stacking extra clauses until it breaks the 160 character limit that the template should respect.",
+        },
       },
     });
 

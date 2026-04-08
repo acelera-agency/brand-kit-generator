@@ -110,3 +110,49 @@ export const Stage5Schema = z.object({
 });
 
 export type Stage5 = z.infer<typeof Stage5Schema>;
+
+const HomepageHeroTemplateSchema = z.object({
+  eyebrow: z.string().min(3, "Homepage eyebrow is too short."),
+  h1: z.string().min(3, "Homepage H1 is too short."),
+  subhead: z.string().min(10, "Homepage subhead is too short."),
+  ctaVariants: z
+    .array(z.string().min(2, "Each CTA needs copy."))
+    .length(2, "Homepage hero needs exactly 2 CTA variants."),
+});
+
+const ColdOutreachTemplateSchema = z.object({
+  subjects: z
+    .array(z.string().min(3, "Each subject line needs copy."))
+    .length(3, "Cold outreach needs exactly 3 subject variants."),
+  body: z.string().min(60, "Cold outreach body is too short."),
+  signOff: z.string().min(3, "Cold outreach sign-off is too short."),
+});
+
+const SocialBiosTemplateSchema = z.object({
+  linkedin: z.string().min(10, "LinkedIn bio is too short."),
+  twitter: z
+    .string()
+    .min(10, "Twitter bio is too short.")
+    .max(160, "Twitter bio exceeds 160 characters."),
+  instagram: z
+    .string()
+    .min(10, "Instagram bio is too short.")
+    .max(150, "Instagram bio exceeds 150 characters."),
+});
+
+const FirstMinuteTemplateSchema = z.object({
+  script: z.string().min(40, "First-minute script is too short."),
+  wordCount: z.number().int().positive("Word count must be a positive integer."),
+});
+
+export const Stage6Schema = z.object({
+  templates: z.object({
+    homepageHero: HomepageHeroTemplateSchema,
+    coldOutreach: ColdOutreachTemplateSchema,
+    socialBios: SocialBiosTemplateSchema,
+    firstMinute: FirstMinuteTemplateSchema,
+    emailSignature: z.string().min(10, "Email signature is too short."),
+  }),
+});
+
+export type Stage6 = z.infer<typeof Stage6Schema>;
