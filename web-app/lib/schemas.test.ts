@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Stage0Schema, Stage1Schema, Stage2Schema, Stage3Schema, Stage4Schema, Stage5Schema, Stage6Schema, Stage7Schema } from "./schemas";
+import { Stage0Schema, Stage1Schema, Stage2Schema, Stage3Schema, Stage4Schema, Stage5Schema, Stage6Schema, Stage7Schema, Stage8Schema } from "./schemas";
 
 describe("Stage0Schema", () => {
   it("accepts a valid 3-sentence beforeAfter narrative", () => {
@@ -444,6 +444,86 @@ describe("Stage7Schema", () => {
       visual: {
         ...validVisual.visual,
         forbiddenVisuals: validVisual.visual.forbiddenVisuals.slice(0, 5),
+      },
+    });
+
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("Stage8Schema", () => {
+  const validRules = {
+    rules: {
+      outreach: [
+        { rule: "Lead with the enemy, not generic capability.", reason: "Generic outreach sounds like every other vendor." },
+        { rule: "Name the handoff problem before mentioning AI.", reason: "The problem frames the credibility of the solution." },
+        { rule: "Say you will walk away if there is no clear fit.", reason: "Pressure erodes the operator-led stance." },
+      ],
+      salesMeeting: [
+        { rule: "Open with the promise the team keeps after handoff.", reason: "It distinguishes the method from vendor dependency." },
+        { rule: "State one anti-positioning line in the first minute.", reason: "Without the refusal, the brand sounds generic." },
+        { rule: "Hand the floor back with a specific diagnostic question.", reason: "The conversation should feel investigative, not theatrical." },
+      ],
+      proposals: [
+        { rule: "Show ownership by role before showing timeline.", reason: "Ownership is the operating mechanism, not decoration." },
+        { rule: "Do not promise transformation without adoption detail.", reason: "It repeats the enemy behavior in polished form." },
+        { rule: "Name what is out of scope in plain language.", reason: "Clear refusal builds trust in the rest of the plan." },
+      ],
+      cases: [
+        { rule: "Explain what changed operationally, not just outcomes.", reason: "The brand sells capability that lasts." },
+        { rule: "Include the cost of the old behavior.", reason: "Without cost, the enemy feels abstract." },
+        { rule: "Use the client's exact internal language where possible.", reason: "Specific language prevents case-study theater." },
+      ],
+      visual: [
+        { rule: "Use the alert color only for actual risk or emphasis.", reason: "Overusing accent breaks the restraint of the system." },
+        { rule: "Every piece must include at least one characteristic component.", reason: "Otherwise the work loses its recognizable signatures." },
+        { rule: "Do not use forbidden category cliches even as placeholders.", reason: "Cliches collapse the visual enemy stance immediately." },
+      ],
+    },
+  };
+
+  it("accepts 3 rules per surface", () => {
+    const result = Stage8Schema.safeParse(validRules);
+
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects surfaces with fewer than 3 rules", () => {
+    const result = Stage8Schema.safeParse({
+      rules: {
+        ...validRules.rules,
+        outreach: validRules.rules.outreach.slice(0, 2),
+      },
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects rules without reasons", () => {
+    const result = Stage8Schema.safeParse({
+      rules: {
+        ...validRules.rules,
+        proposals: [
+          validRules.rules.proposals[0],
+          validRules.rules.proposals[1],
+          { rule: "Name what is out of scope in plain language.", reason: "" },
+        ],
+      },
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects surfaces with more than 5 rules", () => {
+    const result = Stage8Schema.safeParse({
+      rules: {
+        ...validRules.rules,
+        visual: [
+          ...validRules.rules.visual,
+          { rule: "Prefer ruled layouts over floating cards.", reason: "Ruled layouts reinforce the editorial system." },
+          { rule: "Keep gradients out unless explicitly justified.", reason: "Unjustified gradients soften the stance." },
+          { rule: "Avoid decorative shadows on utility elements.", reason: "Decorative polish weakens the industrial tone." },
+        ],
       },
     });
 

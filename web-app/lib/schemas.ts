@@ -208,3 +208,25 @@ export const Stage7Schema = z.object({
 });
 
 export type Stage7 = z.infer<typeof Stage7Schema>;
+
+const SurfaceRuleSchema = z.object({
+  rule: z.string().min(8, "Each rule needs to be specific."),
+  reason: z.string().min(8, "Each rule needs a concrete reason."),
+});
+
+const SurfaceRulesListSchema = z
+  .array(SurfaceRuleSchema)
+  .min(3, "Need at least 3 rules for each surface.")
+  .max(5, "Keep each surface to 5 rules or fewer.");
+
+export const Stage8Schema = z.object({
+  rules: z.object({
+    outreach: SurfaceRulesListSchema,
+    salesMeeting: SurfaceRulesListSchema,
+    proposals: SurfaceRulesListSchema,
+    cases: SurfaceRulesListSchema,
+    visual: SurfaceRulesListSchema,
+  }),
+});
+
+export type Stage8 = z.infer<typeof Stage8Schema>;
