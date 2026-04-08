@@ -1,32 +1,19 @@
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
 import { getServerClient } from "@/lib/supabase";
+import type { StoredKitData } from "@/lib/types";
+import { STAGE_LABELS, STAGE_ORDER } from "@/lib/stage-requirements";
+import { ContextSection } from "./sections/ContextSection";
+import { EnemySection } from "./sections/EnemySection";
+import { StackSection } from "./sections/StackSection";
+import { AntiPositioningSection } from "./sections/AntiPositioningSection";
+import { IcpSection } from "./sections/IcpSection";
+import { VoiceSection } from "./sections/VoiceSection";
+import { TemplatesSection } from "./sections/TemplatesSection";
+import { VisualSection } from "./sections/VisualSection";
+import { RulesSection } from "./sections/RulesSection";
 
 export const dynamic = "force-dynamic";
-
-const STAGE_LABELS: Record<string, string> = {
-  stage_0: "Context & contradiction",
-  stage_1: "Enemy",
-  stage_2: "Three-layer stack",
-  stage_3: "Anti-positioning",
-  stage_4: "ICP signals",
-  stage_5: "Voice constraints",
-  stage_6: "Application templates",
-  stage_7: "Visual direction",
-  stage_8: "Non-negotiable rules",
-};
-
-const STAGE_ORDER = [
-  "stage_0",
-  "stage_1",
-  "stage_2",
-  "stage_3",
-  "stage_4",
-  "stage_5",
-  "stage_6",
-  "stage_7",
-  "stage_8",
-] as const;
 
 export default async function KitViewPage({
   params,
@@ -45,7 +32,7 @@ export default async function KitViewPage({
 
   const { data: kitRow } = await supabase
     .from("brand_kits")
-    .select("id, owner_id, status, kit, updated_at")
+    .select("id, owner_id, status, kit, created_at, updated_at")
     .eq("id", id)
     .single();
 
@@ -66,46 +53,89 @@ export default async function KitViewPage({
   ).length;
   const isComplete = passedCount >= 9;
 
+  const kit = (kitRow.kit ?? {}) as StoredKitData;
+
   return (
     <main className="container-brand min-h-screen py-10 sm:py-14">
-      <header className="flex flex-col gap-6 border-b border-rule pb-8 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="eyebrow mb-4 block">Kit / read-only view</p>
-          <h1 className="font-display text-[clamp(2rem,4.5vw,3.6rem)] font-semibold leading-[0.95] tracking-tightest text-ink">
-            Brand kit {id.slice(0, 8)}
-          </h1>
-          <p className="mt-3 text-sm text-muted-strong">
-            {passedCount} / 9 stages passed
-          </p>
-        </div>
+      {/* Hero */}
+      <header className="border-b border-rule pb-10 sm:pb-14">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+          <div className="max-w-[60ch]">
+            <p className="eyebrow mb-4 block">Brand kit / read-only view</p>
+            <h1 className="font-display text-[clamp(2.4rem,5vw,4.4rem)] font-semibold leading-[0.95] tracking-tightest text-ink">
+              {kit.enemy ? "A brand built against" : "Brand kit"}
+              {kit.enemy ? (
+                <>
+                  {" "}
+                  <span className="text-accent">
+                    {kit.enemy.replace(/[.!?]$/, "")}
+                  </span>
+                  .
+                </>
+              ) : (
+                <>
+                  {" "}
+                  <span className="font-mono text-base text-muted align-middle">
+                    {id.slice(0, 8)}
+                  </span>
+                </>
+              )}
+            </h1>
+            {kit.beforeAfter ? (
+              <p className="mt-6 text-base text-muted-strong sm:text-lg whitespace-pre-wrap">
+                {kit.beforeAfter}
+              </p>
+            ) : (
+              <p className="mt-6 text-sm text-muted-strong">
+                {passedCount} of 9 stages passed. Each section below fills in
+                as you complete the interview.
+              </p>
+            )}
+          </div>
 
-        <div className="flex flex-col items-stretch gap-2 sm:items-end">
-          {isComplete ? (
-            <a
-              href={`/api/kits/${id}/export-md`}
-              className="btn-primary px-5 py-3 text-sm sm:px-6 sm:py-3"
-            >
-              Download markdown
-            </a>
-          ) : (
+          <div className="flex flex-col items-stretch gap-2 sm:items-end shrink-0">
+            <p className="font-mono text-xs uppercase tracking-widest text-muted text-right">
+              {passedCount} / 9 passed
+            </p>
+            {isComplete ? (
+              <a
+                href={`/api/kits/${id}/export-md`}
+                className="btn-primary px-5 py-3 text-sm sm:px-6 sm:py-3"
+              >
+                Download markdown
+              </a>
+            ) : (
+              <Link
+                href={`/interview/${id}`}
+                className="btn-primary px-5 py-3 text-sm sm:px-6 sm:py-3"
+              >
+                Continue interview
+              </Link>
+            )}
             <Link
-              href={`/interview/${id}`}
-              className="btn-primary px-5 py-3 text-sm sm:px-6 sm:py-3"
+              href="/dashboard"
+              className="btn-secondary px-4 py-2 text-xs sm:text-sm"
             >
-              Continue interview
+              Back to dashboard
             </Link>
-          )}
-          <Link
-            href="/dashboard"
-            className="btn-secondary px-4 py-2 text-xs sm:text-sm"
-          >
-            Back to dashboard
-          </Link>
+          </div>
         </div>
       </header>
 
-      <section className="mt-10">
-        <h2 className="eyebrow mb-4 block">Stage progress</h2>
+      {/* Sections */}
+      <ContextSection data={kit.beforeAfter} kitId={id} />
+      <EnemySection data={kit.enemy} kitId={id} />
+      <StackSection data={kit.stack} kitId={id} />
+      <AntiPositioningSection data={kit.antiPositioning} kitId={id} />
+      <IcpSection data={kit.icp} kitId={id} />
+      <VoiceSection data={kit.voice} kitId={id} />
+      <TemplatesSection data={kit.templates} kitId={id} />
+      <VisualSection data={kit.visual} kitId={id} />
+      <RulesSection data={kit.rules} kitId={id} />
+
+      {/* Footer: stage progress appendix */}
+      <footer className="border-t border-rule pt-12 mt-16">
+        <p className="eyebrow mb-4 block">Appendix — Stage progress</p>
         <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {STAGE_ORDER.map((sid, idx) => {
             const status = progressByStage[sid] ?? "empty";
@@ -137,14 +167,14 @@ export default async function KitViewPage({
             );
           })}
         </ol>
-      </section>
 
-      <section className="mt-12">
-        <h2 className="eyebrow mb-4 block">Raw kit data</h2>
-        <pre className="overflow-x-auto border border-rule-strong bg-paper p-5 font-mono text-xs leading-relaxed text-ink">
-          {JSON.stringify(kitRow.kit ?? {}, null, 2)}
-        </pre>
-      </section>
+        <div className="mt-10 flex items-center justify-between border-t border-rule pt-6 text-sm text-muted-strong">
+          <span>{user.email}</span>
+          <Link href="/dashboard" className="btn-secondary px-4 py-2 text-xs">
+            Back to dashboard
+          </Link>
+        </div>
+      </footer>
     </main>
   );
 }

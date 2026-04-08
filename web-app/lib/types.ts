@@ -145,3 +145,26 @@ export interface BrandKit {
     composeVersion: string;
   };
 }
+
+/**
+ * Shape of `brand_kits.kit` JSONB after the gate-check route's shallow merge
+ * (`{ ...existingKit, ...validation.data }`). Each field is the result of one
+ * stage's Zod schema being shallow-merged at the top level. All fields are
+ * optional because a kit may be partially completed.
+ *
+ * Used by the kit view page to render whichever sections have data.
+ */
+export type StoredKitData = {
+  // Stage 0 — Stage0Schema has shape { beforeAfter: string }, lifted to top
+  beforeAfter?: string;
+  // Stage 1 — Stage1Schema has shape { enemy: string }, lifted to top
+  enemy?: string;
+  // Stage 2-8 — each stored under its named key
+  stack?: BrandKit["stack"];
+  antiPositioning?: BrandKit["antiPositioning"];
+  icp?: BrandKit["icp"];
+  voice?: BrandKit["voice"];
+  templates?: BrandKit["templates"];
+  visual?: BrandKit["visual"];
+  rules?: BrandKit["rules"];
+};
