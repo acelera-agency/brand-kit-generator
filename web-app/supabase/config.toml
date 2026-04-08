@@ -1,0 +1,30 @@
+project_id = "brand-kit-generator"
+
+# Auth configuration. Values match the remote defaults that were live BEFORE
+# this file existed — we only want to add site_url + additional_redirect_urls.
+# Do NOT remove the explicit values below; they prevent supabase config push
+# from regressing the project to CLI defaults.
+[auth]
+site_url = "https://brand-kit-generator-frxn.vercel.app"
+additional_redirect_urls = [
+  "https://brand-kit-generator-frxn.vercel.app/auth/callback",
+  "http://localhost:3001/auth/callback",
+  "http://localhost:3002/auth/callback",
+  "http://localhost:3003/auth/callback",
+]
+
+[auth.mfa]
+max_enrolled_factors = 10
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = true
+secure_password_change = false
+max_frequency = "1m0s"
+otp_length = 8
+otp_expiry = 3600
