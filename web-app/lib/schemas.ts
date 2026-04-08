@@ -230,3 +230,60 @@ export const Stage8Schema = z.object({
 });
 
 export type Stage8 = z.infer<typeof Stage8Schema>;
+
+const StageProgressStatusSchema = z.enum(["empty", "in-progress", "passed"]);
+
+const StageProgressSchema = z.object({
+  stage_0: StageProgressStatusSchema,
+  stage_1: StageProgressStatusSchema,
+  stage_2: StageProgressStatusSchema,
+  stage_3: StageProgressStatusSchema,
+  stage_4: StageProgressStatusSchema,
+  stage_5: StageProgressStatusSchema,
+  stage_6: StageProgressStatusSchema,
+  stage_7: StageProgressStatusSchema,
+  stage_8: StageProgressStatusSchema,
+});
+
+export const BrandKitSchema = z
+  .object({
+    id: z.string().min(1, "Brand kit id is required."),
+    ownerId: z.string().min(1, "Owner id is required."),
+    status: z.enum(["draft", "completed", "published"]),
+    createdAt: z.date(),
+    updatedAt: z.date(),
+    stageProgress: StageProgressSchema,
+    context: Stage0Schema,
+    assets: z
+      .object({
+        logoSvg: z.string().url("logoSvg must be a valid URL.").optional(),
+        logoPng: z.string().url("logoPng must be a valid URL.").optional(),
+        customFontFiles: z.array(z.string().url("Font file must be a valid URL.")).optional(),
+      })
+      .optional(),
+    generatedSite: z
+      .object({
+        githubRepo: z.string().min(1, "GitHub repo is required."),
+        vercelProjectId: z.string().min(1, "Vercel project id is required."),
+        previewUrl: z.string().url("Preview URL must be valid."),
+        domain: z.string().min(1, "Domain cannot be empty.").optional(),
+      })
+      .optional(),
+    generatedManual: z
+      .object({
+        pdfUrl: z.string().url("PDF URL must be valid."),
+        composedAt: z.date(),
+        composeVersion: z.string().min(1, "Compose version is required."),
+      })
+      .optional(),
+  })
+  .extend(Stage1Schema.shape)
+  .extend(Stage2Schema.shape)
+  .extend(Stage3Schema.shape)
+  .extend(Stage4Schema.shape)
+  .extend(Stage5Schema.shape)
+  .extend(Stage6Schema.shape)
+  .extend(Stage7Schema.shape)
+  .extend(Stage8Schema.shape);
+
+export type BrandKitSchemaType = z.infer<typeof BrandKitSchema>;
