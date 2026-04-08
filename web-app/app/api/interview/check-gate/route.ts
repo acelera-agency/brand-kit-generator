@@ -13,7 +13,11 @@ import {
   Stage7Schema,
   Stage8Schema,
 } from "@/lib/schemas";
-import { getStageRequirement, type StageId } from "@/lib/stage-requirements";
+import {
+  getStageRequirement,
+  STAGE_ORDER,
+  type StageId,
+} from "@/lib/stage-requirements";
 import type { BrandStage } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -224,16 +228,42 @@ Return JSON conforming to the provided schema. If the user has not provided subs
     );
   }
 
-  // Mark this stage as passed
-  const { error: progressErr } = await supabase.from("stage_progress").upsert(
+  // Mark this stage as passed AND advance the next stage to in-progress.
+  // Without the second upsert, the stream route's `currentStageId` lookup
+  // would not find any stage marked in-progress and would fall back to
+  // stage_0, causing all subsequent user messages to be tagged with the
+  // wrong stage_id and the next stage's gate-check to find zero messages.
+  const stageIndex = STAGE_ORDER.indexOf(stageId);
+  const nextStageId =
+    stageIndex >= 0 && stageIndex < STAGE_ORDER.length - 1
+      ? STAGE_ORDER[stageIndex + 1]
+      : null;
+
+  const progressUpserts: Array<{
+    kit_id: string;
+    stage_id: string;
+    status: "passed" | "in-progress";
+    passed_at?: string;
+  }> = [
     {
       kit_id: kitId,
       stage_id: stageId,
       status: "passed",
       passed_at: new Date().toISOString(),
     },
-    { onConflict: "kit_id,stage_id" },
-  );
+  ];
+
+  if (nextStageId) {
+    progressUpserts.push({
+      kit_id: kitId,
+      stage_id: nextStageId,
+      status: "in-progress",
+    });
+  }
+
+  const { error: progressErr } = await supabase
+    .from("stage_progress")
+    .upsert(progressUpserts, { onConflict: "kit_id,stage_id" });
   if (progressErr) {
     console.error("[check-gate] stage_progress upsert failed", progressErr);
   }

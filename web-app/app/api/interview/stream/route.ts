@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { getOpenAI, MODEL_INTERVIEW } from "@/lib/openai";
 import { buildInterviewMessages } from "@/lib/interview-prompt";
 import { getServerClient } from "@/lib/supabase";
+import { STAGE_ORDER } from "@/lib/stage-requirements";
 import type { BrandStage } from "@/lib/types";
 
 // Force Node.js runtime — the OpenAI SDK uses Node APIs that don't work in Edge.
@@ -44,13 +45,25 @@ export async function POST(req: NextRequest) {
   }
   const brandStage = (kit.brand_stage as BrandStage | null) ?? "new";
 
-  // Determine current stage (the one marked in-progress, fallback stage_0)
+  // Determine current stage. Prefer the row marked in-progress; fall back to
+  // the first stage that hasn't passed yet (so we don't keep tagging
+  // messages with stage_0 after stage_0 has already passed); fall back to
+  // the last stage if the kit is fully complete.
   const { data: progress } = await supabase
     .from("stage_progress")
     .select("stage_id, status")
     .eq("kit_id", kitId);
+  const progressByStage = Object.fromEntries(
+    (progress ?? []).map((p) => [p.stage_id, p.status]),
+  );
+  const inProgressStage = STAGE_ORDER.find(
+    (s) => progressByStage[s] === "in-progress",
+  );
+  const firstNotPassed = STAGE_ORDER.find(
+    (s) => progressByStage[s] !== "passed",
+  );
   const currentStageId =
-    progress?.find((p) => p.status === "in-progress")?.stage_id ?? "stage_0";
+    inProgressStage ?? firstNotPassed ?? STAGE_ORDER[STAGE_ORDER.length - 1];
 
   // Persist user message
   await supabase.from("interview_messages").insert({
