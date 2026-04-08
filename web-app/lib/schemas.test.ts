@@ -707,7 +707,8 @@ describe("BrandKitSchema", () => {
   });
 
   it("rejects a BrandKit missing the context section", () => {
-    const { context: _context, ...withoutContext } = validBrandKit;
+    const withoutContext = { ...validBrandKit };
+    delete withoutContext.context;
     const result = BrandKitSchema.safeParse(withoutContext);
 
     expect(result.success).toBe(false);
