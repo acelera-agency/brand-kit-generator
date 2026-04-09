@@ -34,6 +34,23 @@ export async function GET(
   }
 
   if (generation.status === "generating" && !generation.v0_chat_id) {
+    const svc = getServiceClient();
+    const { data: locked } = await svc
+      .from("site_generations")
+      .update({ v0_chat_id: "pending" })
+      .eq("id", generation.id)
+      .is("v0_chat_id", null)
+      .select("id")
+      .maybeSingle();
+
+    if (!locked) {
+      return NextResponse.json({
+        generationId: generation.id,
+        status: "generating",
+        createdAt: generation.created_at,
+      });
+    }
+
     const result = await executeGeneration(kitId, generation.id);
 
     if (result.status === "completed") {
@@ -54,6 +71,14 @@ export async function GET(
         createdAt: generation.created_at,
       });
     }
+  }
+
+  if (generation.v0_chat_id === "pending" && generation.status === "generating") {
+    return NextResponse.json({
+      generationId: generation.id,
+      status: "generating",
+      createdAt: generation.created_at,
+    });
   }
 
   return NextResponse.json({
