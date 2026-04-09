@@ -1,5 +1,4 @@
-import { Readability } from "@mozilla/readability";
-import { JSDOM } from "jsdom";
+import * as cheerio from "cheerio";
 import type { SourceKind, SourceMaterialMeta } from "./types";
 
 export type SourceMaterialPart = {
@@ -115,15 +114,10 @@ function isLikelyGitHubTextFile(path: string): boolean {
 }
 
 function extractTextFromHtml(html: string): string {
-  const dom = new JSDOM(html, { url: "https://example.com" });
-  const reader = new Readability(dom.window.document);
-  const article = reader.parse();
-  const readableText = normalizeText(article?.textContent ?? "");
-  if (readableText) {
-    return readableText;
-  }
-
-  return normalizeText(dom.window.document.body?.textContent ?? "");
+  const $ = cheerio.load(html);
+  $("script, style, nav, header, footer, noscript, svg, iframe").remove();
+  const text = $("body").text() ?? $("main").text() ?? $.root().text();
+  return normalizeText(text);
 }
 
 export function parseGitHubRepoUrl(
