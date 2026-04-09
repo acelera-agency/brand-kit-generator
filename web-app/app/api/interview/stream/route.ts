@@ -4,6 +4,7 @@ import { buildInterviewMessages } from "@/lib/interview-prompt";
 import { getServerClient } from "@/lib/supabase";
 import { STAGE_ORDER } from "@/lib/stage-requirements";
 import type { BrandStage } from "@/lib/types";
+import { isStageId } from "@/app/api/workspace/_shared";
 
 // Force Node.js runtime — the OpenAI SDK uses Node APIs that don't work in Edge.
 export const runtime = "nodejs";
@@ -22,16 +23,16 @@ export async function POST(req: NextRequest) {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  let body: { kitId?: string; message?: string };
+  let body: { kitId?: string; message?: string; stageId?: string };
   try {
     body = await req.json();
   } catch {
     return new Response("Invalid JSON", { status: 400 });
   }
 
-  const { kitId, message } = body;
-  if (!kitId || !message) {
-    return new Response("Missing kitId or message", { status: 400 });
+  const { kitId, message, stageId } = body;
+  if (!kitId) {
+    return new Response("Missing kitId", { status: 400 });
   }
 
   // Verify the kit belongs to the user and load its brand_stage
@@ -62,16 +63,18 @@ export async function POST(req: NextRequest) {
   const firstNotPassed = STAGE_ORDER.find(
     (s) => progressByStage[s] !== "passed",
   );
-  const currentStageId =
-    inProgressStage ?? firstNotPassed ?? STAGE_ORDER[STAGE_ORDER.length - 1];
+  const currentStageId = isStageId(stageId)
+    ? stageId
+    : inProgressStage ?? firstNotPassed ?? STAGE_ORDER[STAGE_ORDER.length - 1];
 
-  // Persist user message
-  await supabase.from("interview_messages").insert({
-    kit_id: kitId,
-    role: "user",
-    content: message,
-    stage_id: currentStageId,
-  });
+  if (typeof message === "string" && message.trim()) {
+    await supabase.from("interview_messages").insert({
+      kit_id: kitId,
+      role: "user",
+      content: message.trim(),
+      stage_id: currentStageId,
+    });
+  }
 
   // Load full conversation history for this kit (across stages)
   const { data: history } = await supabase

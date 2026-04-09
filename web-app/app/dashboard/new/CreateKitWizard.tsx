@@ -57,6 +57,7 @@ export function CreateKitWizard() {
   const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
   const [selected, setSelected] = useState<BrandStage | null>(null);
+  const [name, setName] = useState("");
   const [url, setUrl] = useState("");
   const [rawText, setRawText] = useState("");
   const [githubRepo, setGithubRepo] = useState("");
@@ -134,6 +135,18 @@ export function CreateKitWizard() {
   async function handleCreateKit() {
     if (!selected || creating) return;
 
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      setError("Give the kit a name before starting the interview.");
+      setStep(1);
+      return;
+    }
+    if (trimmedName.length > 80) {
+      setError("Name must be 80 characters or fewer.");
+      setStep(1);
+      return;
+    }
+
     if (
       hasMaterialInput({ url, rawText, githubRepo, pdfFile }) &&
       !sourceMaterialPreview.trim()
@@ -169,6 +182,7 @@ export function CreateKitWizard() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          name: trimmedName,
           brandStage: selected,
           sourceMaterial: preview || null,
           sourceMaterialMeta: meta,
@@ -209,8 +223,30 @@ export function CreateKitWizard() {
       </header>
 
       {step === 1 ? (
+        <>
+        <section className="mt-10 border border-rule-strong bg-paper-pure p-5 sm:p-6">
+          <label className="block">
+            <span className="font-mono text-xs uppercase tracking-widest text-muted">
+              Kit name
+            </span>
+            <input
+              type="text"
+              value={name}
+              onChange={(event) => {
+                setName(event.target.value);
+                setError(null);
+              }}
+              maxLength={80}
+              placeholder="e.g. Acme rebrand 2026"
+              className="mt-2 w-full border border-rule bg-paper px-4 py-3 text-sm text-ink outline-none transition-colors focus:border-accent"
+            />
+            <p className="mt-2 text-xs text-muted">
+              Required. Must be unique across your workspace so you can find it again on the dashboard.
+            </p>
+          </label>
+        </section>
         <section
-          className="mt-10 grid gap-6 sm:grid-cols-2"
+          className="mt-6 grid gap-6 sm:grid-cols-2"
           role="radiogroup"
           aria-label="Brand stage"
         >
@@ -257,6 +293,7 @@ export function CreateKitWizard() {
             );
           })}
         </section>
+        </>
       ) : (
         <section className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
           <div className="space-y-5">
@@ -443,6 +480,15 @@ export function CreateKitWizard() {
           <button
             type="button"
             onClick={() => {
+              const trimmedName = name.trim();
+              if (!trimmedName) {
+                setError("Give the kit a name before continuing.");
+                return;
+              }
+              if (trimmedName.length > 80) {
+                setError("Name must be 80 characters or fewer.");
+                return;
+              }
               if (!selected) {
                 setError("Pick the brand stage before continuing.");
                 return;
@@ -450,7 +496,7 @@ export function CreateKitWizard() {
               setStep(2);
               setError(null);
             }}
-            disabled={!selected}
+            disabled={!selected || !name.trim()}
             className="btn-primary px-6 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
           >
             Continue to materials

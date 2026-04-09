@@ -45,16 +45,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Body is optional for backwards compatibility — old clients without the
-  // wizard would POST with no body, and we default to 'new' (the most
-  // conservative choice — the stricter anti-fabrication gate-check rules
-  // apply rather than the looser existing-brand ones).
   let brandStage: BrandStage = "new";
   let sourceMaterial: string | null = null;
   let sourceMaterialMeta: SourceMaterialMeta | null = null;
+  let name: string | null = null;
   try {
     const body = await req.json();
     if (body && typeof body === "object") {
+      if ("name" in body) {
+        const candidate = (body as { name: unknown }).name;
+        if (typeof candidate !== "string") {
+          return NextResponse.json(
+            { error: "Invalid name: must be a string" },
+            { status: 400 },
+          );
+        }
+        name = candidate.trim();
+      }
+
       if ("brandStage" in body) {
         const candidate = (body as { brandStage: unknown }).brandStage;
         if (!isBrandStage(candidate)) {
@@ -91,7 +99,23 @@ export async function POST(req: NextRequest) {
       }
     }
   } catch {
-    // No body or invalid JSON — fall through to default 'new'.
+    return NextResponse.json(
+      { error: "Invalid request body" },
+      { status: 400 },
+    );
+  }
+
+  if (!name) {
+    return NextResponse.json(
+      { error: "A name is required for the brand kit." },
+      { status: 400 },
+    );
+  }
+  if (name.length > 80) {
+    return NextResponse.json(
+      { error: "Name must be 80 characters or fewer." },
+      { status: 400 },
+    );
   }
 
   // Create the kit row
@@ -101,6 +125,7 @@ export async function POST(req: NextRequest) {
       owner_id: user.id,
       status: "draft",
       kit: {},
+      name,
       brand_stage: brandStage,
       source_material: sourceMaterial,
       source_material_meta: sourceMaterialMeta ?? {},
@@ -109,6 +134,14 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (kitErr || !kit) {
+    // Postgres unique-violation surfaces as code 23505 — surface a clear
+    // message so the wizard can prompt the user to pick a different name.
+    if (kitErr?.code === "23505") {
+      return NextResponse.json(
+        { error: "You already have a brand kit with that name." },
+        { status: 409 },
+      );
+    }
     console.error("[kits/create] insert failed", kitErr);
     return NextResponse.json(
       { error: "Failed to create kit" },

@@ -8,6 +8,7 @@ project_id = "brand-kit-generator"
 site_url = "https://brand-kit-generator-frxn.vercel.app"
 additional_redirect_urls = [
   "https://brand-kit-generator-frxn.vercel.app/auth/callback",
+  "http://localhost:3000/auth/callback",
   "http://localhost:3001/auth/callback",
   "http://localhost:3002/auth/callback",
   "http://localhost:3003/auth/callback",

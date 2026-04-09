@@ -1,7 +1,12 @@
 import { redirect, notFound } from "next/navigation";
 import { getServerClient } from "@/lib/supabase";
-import { STAGE_ORDER } from "@/lib/stage-requirements";
-import type { BrandStage } from "@/lib/types";
+import type { BrandStage, StoredKitData } from "@/lib/types";
+import {
+  buildWorkspaceState,
+  buildWorkspaceView,
+  type StageProgressStatus,
+  type WorkspaceMessageRecord,
+} from "@/lib/workspace-view";
 import { InterviewChat } from "./InterviewChat";
 
 export const dynamic = "force-dynamic";
@@ -32,7 +37,7 @@ export default async function InterviewPage({
   // Verify ownership and load brand_stage
   const { data: kitRow } = await supabase
     .from("brand_kits")
-    .select("id, owner_id, brand_stage, source_material")
+    .select("id, owner_id, brand_stage, source_material, kit")
     .eq("id", kitId)
     .single();
   if (!kitRow || kitRow.owner_id !== user.id) {
@@ -63,23 +68,31 @@ export default async function InterviewPage({
     }));
 
   const progressByStage = Object.fromEntries(
-    (progressRows ?? []).map((p) => [p.stage_id, p.status]),
-  );
+    (progressRows ?? []).map((p) => [p.stage_id, p.status as StageProgressStatus]),
+  ) as Partial<Record<WorkspaceMessageRecord["stageId"], StageProgressStatus>>;
 
-  // Determine current stage:
-  // 1. The stage marked "in-progress" (there should be one)
-  // 2. Else: first stage that's not "passed"
-  // 3. Else: stage_8 (everything passed — kit done)
-  const inProgressStage = STAGE_ORDER.find(
-    (s) => progressByStage[s] === "in-progress",
-  );
-  const firstNotPassed = STAGE_ORDER.find(
-    (s) => progressByStage[s] !== "passed",
-  );
-  const currentStage = inProgressStage ?? firstNotPassed ?? "stage_8";
+  const workspaceMessages: WorkspaceMessageRecord[] = ((rawMessages ?? []) as StoredMessage[])
+    .filter((message): message is StoredMessage & { stage_id: WorkspaceMessageRecord["stageId"] } =>
+      (message.role === "user" || message.role === "assistant") &&
+      typeof message.stage_id === "string",
+    )
+    .map((message) => ({
+      id: message.id,
+      role: message.role as "user" | "assistant",
+      content: message.content,
+      stageId: message.stage_id as WorkspaceMessageRecord["stageId"],
+      createdAt: message.created_at,
+    }));
 
-  const passedCount = STAGE_ORDER.filter(
-    (s) => progressByStage[s] === "passed",
+  const approvedKit = ((kitRow.kit ?? {}) as StoredKitData) ?? {};
+  const workspaceState = buildWorkspaceState(workspaceMessages, progressByStage);
+  const workspaceView = buildWorkspaceView({
+    approvedKit,
+    workspaceState,
+    progressByStage,
+  });
+  const passedCount = Object.values(progressByStage).filter(
+    (status) => status === "passed",
   ).length;
 
   return (
@@ -88,8 +101,11 @@ export default async function InterviewPage({
       brandStage={brandStage}
       hasSourceMaterial={typeof kitRow.source_material === "string" && kitRow.source_material.length > 0}
       initialMessages={messages}
-      initialStage={currentStage}
       initialPassedCount={passedCount}
+      initialApprovedKit={approvedKit}
+      initialWorkspaceState={workspaceState}
+      initialProgressByStage={progressByStage}
+      initialWorkspaceView={workspaceView}
     />
   );
 }

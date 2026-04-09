@@ -7,12 +7,15 @@ import type { BrandStage } from "@/lib/types";
 type Props = {
   stageId: StageId;
   brandStage: BrandStage;
+  compact?: boolean;
 };
 
-export function StageHintCard({ stageId, brandStage }: Props) {
+export function StageHintCard({ stageId, brandStage, compact = false }: Props) {
   const req = getStageRequirement(stageId, brandStage);
   return (
-    <aside className="border border-rule-strong bg-paper-pure p-4 sm:p-5">
+    <aside
+      className={`border border-rule-strong bg-paper-pure ${compact ? "p-4" : "p-4 sm:p-5"}`}
+    >
       <p className="font-mono text-xs uppercase tracking-widest text-accent">
         What this stage needs
       </p>

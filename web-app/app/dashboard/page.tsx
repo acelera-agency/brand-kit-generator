@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerClient } from "@/lib/supabase";
+import { DeleteKitButton } from "./DeleteKitButton";
 import { StartKitButton } from "./StartKitButton";
 
 export const dynamic = "force-dynamic";
 
 type KitRow = {
   id: string;
+  name: string;
   status: "draft" | "completed" | "published";
   created_at: string;
   updated_at: string;
@@ -44,7 +46,7 @@ export default async function DashboardPage() {
 
   const { data: kits, error } = await supabase
     .from("brand_kits")
-    .select("id, status, created_at, updated_at")
+    .select("id, name, status, created_at, updated_at")
     .order("updated_at", { ascending: false });
 
   if (error) {
@@ -90,7 +92,7 @@ export default async function DashboardPage() {
             {rows.map((kit) => (
               <li
                 key={kit.id}
-                className="border border-rule-strong bg-paper-pure p-5 shadow-[0_8px_28px_rgba(11,15,20,0.05)]"
+                className="flex flex-col border border-rule-strong bg-paper-pure p-5 shadow-[0_8px_28px_rgba(11,15,20,0.05)]"
               >
                 <div className="flex items-center justify-between border-b border-rule pb-3">
                   <p className="font-mono text-xs uppercase tracking-widest text-muted">
@@ -100,28 +102,31 @@ export default async function DashboardPage() {
                     {kit.id.slice(0, 8)}
                   </p>
                 </div>
-                <h3 className="mt-4 font-display text-xl font-medium text-ink">
-                  Brand kit
+                <h3 className="mt-4 font-display text-xl font-medium text-ink break-words">
+                  {kit.name}
                 </h3>
                 <p className="mt-2 text-xs text-muted-strong">
                   Updated {formatDate(kit.updated_at)}
                 </p>
 
-                <div className="mt-6 flex items-center justify-between gap-3">
-                  <Link
-                    href={`/interview/${kit.id}`}
-                    className="btn-primary px-4 py-2 text-sm"
-                  >
-                    Continue
-                  </Link>
-                  {kit.status === "completed" || kit.status === "published" ? (
+                <div className="mt-6 flex items-end justify-between gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
                     <Link
-                      href={`/kit/${kit.id}`}
-                      className="btn-secondary px-4 py-2 text-sm"
+                      href={`/interview/${kit.id}`}
+                      className="btn-primary px-4 py-2 text-sm"
                     >
-                      View kit
+                      Continue
                     </Link>
-                  ) : null}
+                    {kit.status === "completed" || kit.status === "published" ? (
+                      <Link
+                        href={`/kit/${kit.id}`}
+                        className="btn-secondary px-4 py-2 text-sm"
+                      >
+                        View kit
+                      </Link>
+                    ) : null}
+                  </div>
+                  <DeleteKitButton kitId={kit.id} kitName={kit.name} />
                 </div>
               </li>
             ))}

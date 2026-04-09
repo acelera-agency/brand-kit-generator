@@ -13,3 +13,5 @@ Thumbs.db
 # Env files at root level (web/ has its own)
 .env
 .env.local
+
+.vercel

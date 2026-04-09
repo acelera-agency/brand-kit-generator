@@ -6,6 +6,8 @@ import remarkGfm from "remark-gfm";
 type Props = {
   content: string;
   streaming: boolean;
+  compact?: boolean;
+  className?: string;
 };
 
 // Inline markdown styles via Tailwind arbitrary selectors so we don't depend
@@ -40,9 +42,16 @@ function BlinkingCursor() {
   );
 }
 
-export function AssistantBubble({ content, streaming }: Props) {
+export function AssistantBubble({
+  content,
+  streaming,
+  compact = false,
+  className = "",
+}: Props) {
   return (
-    <div className="border border-rule bg-paper p-4 mr-12">
+    <div
+      className={`border border-rule bg-paper ${compact ? "p-4" : "mr-12 p-4"} ${className}`.trim()}
+    >
       <p className="mb-2 font-mono text-xs uppercase tracking-widest text-muted">
         Generator
       </p>
