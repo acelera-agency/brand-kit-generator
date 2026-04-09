@@ -7,6 +7,7 @@ import {
   STAGE_ORDER,
   type StageId,
 } from "@/lib/stage-requirements";
+import type { BrandStage } from "@/lib/types";
 import { AssistantBubble } from "./AssistantBubble";
 import { StageHintCard } from "./StageHintCard";
 
@@ -18,6 +19,8 @@ type ChatMessage = {
 
 type Props = {
   kitId: string;
+  brandStage: BrandStage;
+  hasSourceMaterial: boolean;
   initialMessages: ChatMessage[];
   initialStage: StageId;
   initialPassedCount: number;
@@ -38,6 +41,8 @@ function nextStage(s: StageId): StageId | null {
 
 export function InterviewChat({
   kitId,
+  brandStage,
+  hasSourceMaterial,
   initialMessages,
   initialStage,
   initialPassedCount,
@@ -343,7 +348,14 @@ export function InterviewChat({
             </div>
           ) : (
             <div className="flex flex-col gap-4">
-              <StageHintCard stageId={currentStage} />
+              {hasSourceMaterial ? (
+                <div className="border border-rule bg-accent-soft px-4 py-3 text-sm text-ink">
+                  Imported materials are loaded for context. The generator may
+                  reference them, but each stage still needs your confirmation
+                  or correction.
+                </div>
+              ) : null}
+              <StageHintCard stageId={currentStage} brandStage={brandStage} />
               <form onSubmit={handleSubmit} className="flex flex-col gap-3">
                 <label className="block">
                   <span className="font-mono text-xs uppercase tracking-widest text-muted">

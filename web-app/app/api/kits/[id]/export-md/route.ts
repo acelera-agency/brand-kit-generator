@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerClient } from "@/lib/supabase";
 import { exportToMarkdown } from "@/lib/export-markdown";
-import type { BrandKit } from "@/lib/types";
+import type { BrandKit, BrandStage, StoredKitData } from "@/lib/types";
 
 export const runtime = "nodejs";
 
@@ -22,7 +22,7 @@ export async function GET(
   // Fetch kit + verify ownership
   const { data: kitRow, error: kitErr } = await supabase
     .from("brand_kits")
-    .select("id, owner_id, kit, created_at, updated_at, status")
+    .select("id, owner_id, kit, created_at, updated_at, status, brand_stage")
     .eq("id", id)
     .single();
 
@@ -48,22 +48,32 @@ export async function GET(
   }
 
   // Compose a BrandKit shape from the JSONB + row metadata.
-  // The JSONB only stores the stage outputs; we hydrate ownership/timestamp
-  // fields from the row so exportToMarkdown is happy.
-  const kitData = (kitRow.kit ?? {}) as Record<string, unknown>;
+  //
+  // The JSONB stores stage slices at the top level (matching StoredKitData):
+  // beforeAfter, enemy, stack, antiPositioning, icp, voice, templates, visual,
+  // rules. The BrandKit interface that exportToMarkdown expects nests
+  // beforeAfter under `context` (a Phase A schema decision). We re-nest it
+  // here so the markdown renderer is happy without changing the JSONB shape.
+  const kitData = (kitRow.kit ?? {}) as StoredKitData;
   const hydrated: BrandKit = {
     id: kitRow.id,
     ownerId: kitRow.owner_id,
     status: kitRow.status as BrandKit["status"],
+    brandStage: ((kitRow.brand_stage as BrandStage | null) ?? "new"),
     createdAt: new Date(kitRow.created_at),
     updatedAt: new Date(kitRow.updated_at),
     stageProgress: Object.fromEntries(
       (progress ?? []).map((p) => [p.stage_id, p.status]),
     ) as BrandKit["stageProgress"],
-    ...(kitData as Omit<
-      BrandKit,
-      "id" | "ownerId" | "status" | "createdAt" | "updatedAt" | "stageProgress"
-    >),
+    context: { beforeAfter: kitData.beforeAfter ?? "" },
+    enemy: kitData.enemy ?? "",
+    stack: kitData.stack as BrandKit["stack"],
+    antiPositioning: (kitData.antiPositioning ?? []) as BrandKit["antiPositioning"],
+    icp: kitData.icp as BrandKit["icp"],
+    voice: kitData.voice as BrandKit["voice"],
+    templates: kitData.templates as BrandKit["templates"],
+    visual: kitData.visual as BrandKit["visual"],
+    rules: kitData.rules as BrandKit["rules"],
   };
 
   let markdown: string;
