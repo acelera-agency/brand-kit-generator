@@ -5,6 +5,7 @@ import { buildV0SitePrompt } from "@/lib/v0-prompt";
 import type { StoredKitData } from "@/lib/types";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 export async function POST(
   _req: NextRequest,
@@ -80,19 +81,6 @@ export async function POST(
 
   const generationId = generation.id;
 
-  generateSiteAsync(generationId, prompt).catch((err) => {
-    console.error("[generate-site] async generation failed", err);
-  });
-
-  return NextResponse.json({
-    generationId,
-    status: "generating",
-  });
-}
-
-async function generateSiteAsync(generationId: string, prompt: string) {
-  const svc = getServiceClient();
-
   try {
     const v0 = getV0Client();
 
@@ -100,7 +88,6 @@ async function generateSiteAsync(generationId: string, prompt: string) {
       message: prompt,
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const chatObj = chat as any;
     const latestVersion = chatObj.latestVersion as Record<string, unknown> | undefined;
     const demoUrl = (latestVersion as Record<string, unknown>)?.demoUrl as string | null ?? null;
@@ -121,6 +108,12 @@ async function generateSiteAsync(generationId: string, prompt: string) {
         generated_files: files,
       })
       .eq("id", generationId);
+
+    return NextResponse.json({
+      generationId,
+      status: "completed",
+      demoUrl,
+    });
   } catch (err) {
     console.error("[generate-site] v0 call failed", err);
     await svc
@@ -130,5 +123,11 @@ async function generateSiteAsync(generationId: string, prompt: string) {
         error_message: err instanceof Error ? err.message : String(err),
       })
       .eq("id", generationId);
+
+    return NextResponse.json({
+      generationId,
+      status: "failed",
+      error: err instanceof Error ? err.message : String(err),
+    }, { status: 500 });
   }
 }

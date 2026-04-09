@@ -58,9 +58,21 @@ export function SitePreview({ kitId, passedCount, generation }: Props) {
       });
       const data = await res.json();
 
-      if (!res.ok) {
+      if (!res.ok && data.status !== "failed") {
         setError(data.error ?? "Generation failed");
         setStatus("failed");
+        return;
+      }
+
+      if (data.status === "completed") {
+        setStatus("completed");
+        setDemoUrl(data.demoUrl);
+        return;
+      }
+
+      if (data.status === "failed") {
+        setStatus("failed");
+        setError(data.error ?? "Generation failed");
         return;
       }
 
