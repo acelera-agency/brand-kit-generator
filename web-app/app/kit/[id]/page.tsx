@@ -98,12 +98,20 @@ export default async function KitViewPage({
               {passedCount} / 9 passed
             </p>
             {isComplete ? (
-              <a
-                href={`/api/kits/${id}/export-md`}
-                className="btn-primary px-5 py-3 text-sm sm:px-6 sm:py-3"
-              >
-                Download markdown
-              </a>
+              <div className="flex flex-col gap-2 sm:items-end">
+                <Link
+                  href={`/kit/${id}/site`}
+                  className="btn-primary px-5 py-3 text-sm sm:px-6 sm:py-3"
+                >
+                  Generate site
+                </Link>
+                <a
+                  href={`/api/kits/${id}/export-md`}
+                  className="btn-secondary px-5 py-3 text-sm sm:px-6 sm:py-3"
+                >
+                  Download markdown
+                </a>
+              </div>
             ) : (
               <Link
                 href={`/interview/${id}`}

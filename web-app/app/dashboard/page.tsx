@@ -118,12 +118,20 @@ export default async function DashboardPage() {
                       Continue
                     </Link>
                     {kit.status === "completed" || kit.status === "published" ? (
-                      <Link
-                        href={`/kit/${kit.id}`}
-                        className="btn-secondary px-4 py-2 text-sm"
-                      >
-                        View kit
-                      </Link>
+                      <>
+                        <Link
+                          href={`/kit/${kit.id}`}
+                          className="btn-secondary px-4 py-2 text-sm"
+                        >
+                          View kit
+                        </Link>
+                        <Link
+                          href={`/kit/${kit.id}/site`}
+                          className="btn-primary px-4 py-2 text-sm"
+                        >
+                          Generate site
+                        </Link>
+                      </>
                     ) : null}
                   </div>
                   <DeleteKitButton kitId={kit.id} kitName={kit.name} />
