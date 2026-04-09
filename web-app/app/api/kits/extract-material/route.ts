@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import {
   buildSourceMaterial,
   extractMaterialSources,
+  type SourceMaterialPart,
 } from "@/lib/material-ingestion";
 import { getServerClient } from "@/lib/supabase";
 
@@ -20,15 +21,36 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const formData = await req.formData();
+  let formData: FormData;
+  try {
+    formData = await req.formData();
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid request body" },
+      { status: 400 },
+    );
+  }
+
   const pdfEntry = formData.get("pdf");
 
-  const { parts, warnings } = await extractMaterialSources({
-    url: getStringValue(formData.get("url")),
-    rawText: getStringValue(formData.get("rawText")),
-    githubRepo: getStringValue(formData.get("githubRepo")),
-    pdfFile: pdfEntry instanceof File ? pdfEntry : null,
-  });
+  let parts: SourceMaterialPart[];
+  let warnings: string[];
+  try {
+    const result = await extractMaterialSources({
+      url: getStringValue(formData.get("url")),
+      rawText: getStringValue(formData.get("rawText")),
+      githubRepo: getStringValue(formData.get("githubRepo")),
+      pdfFile: pdfEntry instanceof File ? pdfEntry : null,
+    });
+    parts = result.parts;
+    warnings = result.warnings;
+  } catch (err) {
+    console.error("[extract-material] extraction failed", err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Material extraction failed" },
+      { status: 500 },
+    );
+  }
 
   if (parts.length === 0) {
     return NextResponse.json(
