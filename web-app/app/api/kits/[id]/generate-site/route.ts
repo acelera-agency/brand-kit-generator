@@ -5,7 +5,6 @@ import { buildV0SitePrompt } from "@/lib/v0-prompt";
 import type { StoredKitData } from "@/lib/types";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
 
 export async function POST(
   _req: NextRequest,
@@ -67,6 +66,7 @@ export async function POST(
       owner_id: user.id,
       status: "generating",
       prompt_hash: prompt.length.toString(36),
+      generated_files: [],
     })
     .select("id")
     .single();
@@ -79,56 +79,8 @@ export async function POST(
     );
   }
 
-  const generationId = generation.id;
-
-  try {
-    const v0 = getV0Client();
-
-    const chat = await v0.chats.create({
-      message: prompt,
-    });
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const chatObj = chat as any;
-    const latestVersion = chatObj.latestVersion as Record<string, unknown> | undefined;
-    const demoUrl = (latestVersion as Record<string, unknown>)?.demoUrl as string | null ?? null;
-    const rawFiles = (latestVersion as Record<string, unknown>)?.files as Array<Record<string, string>> | undefined;
-    const files = rawFiles?.map((f) => ({
-      name: f.name,
-      content: f.content,
-    })) ?? [];
-
-    await svc
-      .from("site_generations")
-      .update({
-        status: "completed",
-        v0_project_id: chatObj.projectId as string | null ?? null,
-        v0_chat_id: chatObj.id as string,
-        v0_version_id: (latestVersion as Record<string, unknown>)?.id as string | null ?? null,
-        demo_url: demoUrl,
-        generated_files: files,
-      })
-      .eq("id", generationId);
-
-    return NextResponse.json({
-      generationId,
-      status: "completed",
-      demoUrl,
-    });
-  } catch (err) {
-    console.error("[generate-site] v0 call failed", err);
-    await svc
-      .from("site_generations")
-      .update({
-        status: "failed",
-        error_message: err instanceof Error ? err.message : String(err),
-      })
-      .eq("id", generationId);
-
-    return NextResponse.json({
-      generationId,
-      status: "failed",
-      error: err instanceof Error ? err.message : String(err),
-    }, { status: 500 });
-  }
+  return NextResponse.json({
+    generationId: generation.id,
+    status: "generating",
+  });
 }
