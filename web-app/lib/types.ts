@@ -192,3 +192,21 @@ export type StoredKitData = {
   visual?: BrandKit["visual"];
   rules?: BrandKit["rules"];
 };
+
+export type SiteGenerationStatus = "pending" | "generating" | "completed" | "failed";
+
+export interface SiteGeneration {
+  id: string;
+  kitId: string;
+  ownerId: string;
+  status: SiteGenerationStatus;
+  v0ProjectId: string | null;
+  v0ChatId: string | null;
+  v0VersionId: string | null;
+  demoUrl: string | null;
+  generatedFiles: Array<{ name: string; content: string }>;
+  promptHash: string | null;
+  errorMessage: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
