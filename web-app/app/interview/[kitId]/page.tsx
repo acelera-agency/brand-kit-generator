@@ -1,6 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { getServerClient } from "@/lib/supabase";
 import { STAGE_ORDER } from "@/lib/stage-requirements";
+import type { BrandStage } from "@/lib/types";
 import { InterviewChat } from "./InterviewChat";
 
 export const dynamic = "force-dynamic";
@@ -28,15 +29,16 @@ export default async function InterviewPage({
     redirect("/login");
   }
 
-  // Verify ownership
+  // Verify ownership and load brand_stage
   const { data: kitRow } = await supabase
     .from("brand_kits")
-    .select("id, owner_id")
+    .select("id, owner_id, brand_stage, source_material")
     .eq("id", kitId)
     .single();
   if (!kitRow || kitRow.owner_id !== user.id) {
     notFound();
   }
+  const brandStage = (kitRow.brand_stage as BrandStage | null) ?? "new";
 
   // Load messages + progress
   const [{ data: rawMessages }, { data: progressRows }] = await Promise.all([
@@ -83,6 +85,8 @@ export default async function InterviewPage({
   return (
     <InterviewChat
       kitId={kitId}
+      brandStage={brandStage}
+      hasSourceMaterial={typeof kitRow.source_material === "string" && kitRow.source_material.length > 0}
       initialMessages={messages}
       initialStage={currentStage}
       initialPassedCount={passedCount}

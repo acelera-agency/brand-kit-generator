@@ -5,9 +5,9 @@ project_id = "brand-kit-generator"
 # Do NOT remove the explicit values below; they prevent supabase config push
 # from regressing the project to CLI defaults.
 [auth]
-site_url = "https://web-app-tau-sandy.vercel.app"
+site_url = "https://brand-kit-generator-frxn.vercel.app"
 additional_redirect_urls = [
-  "https://web-app-tau-sandy.vercel.app/auth/callback",
+  "https://brand-kit-generator-frxn.vercel.app/auth/callback",
   "http://localhost:3001/auth/callback",
   "http://localhost:3002/auth/callback",
   "http://localhost:3003/auth/callback",
