@@ -88,6 +88,7 @@ export async function POST(
       message: prompt,
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const chatObj = chat as any;
     const latestVersion = chatObj.latestVersion as Record<string, unknown> | undefined;
     const demoUrl = (latestVersion as Record<string, unknown>)?.demoUrl as string | null ?? null;
