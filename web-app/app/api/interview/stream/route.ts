@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
   // Verify the kit belongs to the user and load its brand_stage
   const { data: kit, error: kitErr } = await supabase
     .from("brand_kits")
-    .select("id, owner_id, brand_stage")
+    .select("id, owner_id, brand_stage, source_material")
     .eq("id", kitId)
     .single();
   if (kitErr || !kit || kit.owner_id !== user.id) {
@@ -89,6 +89,8 @@ export async function POST(req: NextRequest) {
   const messages = buildInterviewMessages({
     currentStageId,
     brandStage,
+    sourceMaterial:
+      typeof kit.source_material === "string" ? kit.source_material : null,
     conversationHistory,
   });
 

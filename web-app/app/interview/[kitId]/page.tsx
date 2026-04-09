@@ -32,7 +32,7 @@ export default async function InterviewPage({
   // Verify ownership and load brand_stage
   const { data: kitRow } = await supabase
     .from("brand_kits")
-    .select("id, owner_id, brand_stage")
+    .select("id, owner_id, brand_stage, source_material")
     .eq("id", kitId)
     .single();
   if (!kitRow || kitRow.owner_id !== user.id) {
@@ -86,6 +86,7 @@ export default async function InterviewPage({
     <InterviewChat
       kitId={kitId}
       brandStage={brandStage}
+      hasSourceMaterial={typeof kitRow.source_material === "string" && kitRow.source_material.length > 0}
       initialMessages={messages}
       initialStage={currentStage}
       initialPassedCount={passedCount}
