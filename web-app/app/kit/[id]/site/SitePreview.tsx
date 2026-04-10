@@ -97,13 +97,14 @@ export function SitePreview({ kitId, passedCount, generation }: Props) {
         </h2>
         <p className="mx-auto mt-3 max-w-[48ch] text-sm text-muted-strong">
           You need to finish all 9 interview stages before generating a site.
-          Return to the interview or kit view to continue.
+          The full brand kit is the source of truth, so the site stays locked
+          until that artifact is finished.
         </p>
         <a
           href={`/interview/${kitId}`}
           className="btn-primary mt-6 inline-block px-6 py-3 text-sm"
         >
-          Continue interview
+          Continue guided flow
         </a>
       </div>
     );
@@ -111,6 +112,16 @@ export function SitePreview({ kitId, passedCount, generation }: Props) {
 
   return (
     <div className="space-y-8">
+      <div className="border border-rule-strong bg-paper-pure p-5 sm:p-6">
+        <p className="font-mono text-xs uppercase tracking-widest text-accent">
+          Secondary output
+        </p>
+        <p className="mt-3 max-w-[58ch] text-sm text-muted-strong">
+          Use this only after the brand kit feels final. The generated site is
+          meant to express the kit, not replace the thinking captured there.
+        </p>
+      </div>
+
       <div className="flex items-center gap-4">
         <button
           onClick={handleGenerate}
@@ -120,8 +131,8 @@ export function SitePreview({ kitId, passedCount, generation }: Props) {
           {generating || status === "generating"
             ? "Generating..."
             : generation
-              ? "Regenerate site"
-              : "Generate site"}
+              ? "Regenerate site draft"
+              : "Generate site draft"}
         </button>
 
         {status === "generating" && (

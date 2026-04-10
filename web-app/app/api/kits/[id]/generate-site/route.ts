@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerClient, getServiceClient } from "@/lib/supabase";
-import { getV0Client } from "@/lib/v0-client";
 import { buildV0SitePrompt } from "@/lib/v0-prompt";
 import type { StoredKitData } from "@/lib/types";
 

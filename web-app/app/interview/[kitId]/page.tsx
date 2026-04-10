@@ -1,23 +1,15 @@
-import { redirect, notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { getDraftCheckpoint } from "@/lib/founder-experience";
+import type {
+  BrandStage,
+  DraftCheckpoint,
+  ExperienceMode,
+} from "@/lib/types";
 import { getServerClient } from "@/lib/supabase";
-import type { BrandStage, StoredKitData } from "@/lib/types";
-import {
-  buildWorkspaceState,
-  buildWorkspaceView,
-  type StageProgressStatus,
-  type WorkspaceMessageRecord,
-} from "@/lib/workspace-view";
-import { InterviewChat } from "./InterviewChat";
+import { loadWorkspaceSnapshot } from "@/app/api/workspace/_shared";
+import { FounderInterviewFlow } from "./FounderInterviewFlow";
 
 export const dynamic = "force-dynamic";
-
-type StoredMessage = {
-  id: string;
-  role: "user" | "assistant" | "system";
-  content: string;
-  stage_id: string;
-  created_at: string;
-};
 
 export default async function InterviewPage({
   params,
@@ -34,78 +26,40 @@ export default async function InterviewPage({
     redirect("/login");
   }
 
-  // Verify ownership and load brand_stage
   const { data: kitRow } = await supabase
     .from("brand_kits")
-    .select("id, owner_id, brand_stage, source_material, kit")
+    .select(
+      "id, owner_id, name, brand_stage, experience_mode, handoff_requested_at, draft_checkpoint",
+    )
     .eq("id", kitId)
     .single();
   if (!kitRow || kitRow.owner_id !== user.id) {
     notFound();
   }
-  const brandStage = (kitRow.brand_stage as BrandStage | null) ?? "new";
 
-  // Load messages + progress
-  const [{ data: rawMessages }, { data: progressRows }] = await Promise.all([
-    supabase
-      .from("interview_messages")
-      .select("id, role, content, stage_id, created_at")
-      .eq("kit_id", kitId)
-      .order("created_at", { ascending: true }),
-    supabase
-      .from("stage_progress")
-      .select("stage_id, status")
-      .eq("kit_id", kitId),
-  ]);
-
-  // Filter out system messages from display (we only show user + assistant)
-  const messages = ((rawMessages ?? []) as StoredMessage[])
-    .filter((m) => m.role === "user" || m.role === "assistant")
-    .map((m) => ({
-      id: m.id,
-      role: m.role as "user" | "assistant",
-      content: m.content,
-    }));
-
-  const progressByStage = Object.fromEntries(
-    (progressRows ?? []).map((p) => [p.stage_id, p.status as StageProgressStatus]),
-  ) as Partial<Record<WorkspaceMessageRecord["stageId"], StageProgressStatus>>;
-
-  const workspaceMessages: WorkspaceMessageRecord[] = ((rawMessages ?? []) as StoredMessage[])
-    .filter((message): message is StoredMessage & { stage_id: WorkspaceMessageRecord["stageId"] } =>
-      (message.role === "user" || message.role === "assistant") &&
-      typeof message.stage_id === "string",
-    )
-    .map((message) => ({
-      id: message.id,
-      role: message.role as "user" | "assistant",
-      content: message.content,
-      stageId: message.stage_id as WorkspaceMessageRecord["stageId"],
-      createdAt: message.created_at,
-    }));
-
-  const approvedKit = ((kitRow.kit ?? {}) as StoredKitData) ?? {};
-  const workspaceState = buildWorkspaceState(workspaceMessages, progressByStage);
-  const workspaceView = buildWorkspaceView({
-    approvedKit,
-    workspaceState,
-    progressByStage,
-  });
-  const passedCount = Object.values(progressByStage).filter(
-    (status) => status === "passed",
-  ).length;
+  const snapshot = await loadWorkspaceSnapshot(supabase, kitId);
 
   return (
-    <InterviewChat
+    <FounderInterviewFlow
       kitId={kitId}
-      brandStage={brandStage}
-      hasSourceMaterial={typeof kitRow.source_material === "string" && kitRow.source_material.length > 0}
-      initialMessages={messages}
-      initialPassedCount={passedCount}
-      initialApprovedKit={approvedKit}
-      initialWorkspaceState={workspaceState}
-      initialProgressByStage={progressByStage}
-      initialWorkspaceView={workspaceView}
+      kitName={kitRow.name}
+      brandStage={(kitRow.brand_stage as BrandStage | null) ?? "new"}
+      experienceMode={
+        ((kitRow.experience_mode as ExperienceMode | null) ?? "guided")
+      }
+      handoffRequestedAt={
+        typeof kitRow.handoff_requested_at === "string"
+          ? kitRow.handoff_requested_at
+          : null
+      }
+      initialApprovedKit={snapshot.approvedKit}
+      initialProgressByStage={snapshot.progressByStage}
+      initialWorkspaceState={snapshot.workspaceState}
+      initialDraftCheckpoint={
+        ((kitRow.draft_checkpoint as DraftCheckpoint | null) ??
+          getDraftCheckpoint(snapshot.progressByStage))
+      }
+      initialInspirationItems={snapshot.inspirationItems}
     />
   );
 }

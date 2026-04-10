@@ -52,12 +52,13 @@ export default async function SitePage({
       <header className="border-b border-rule pb-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="eyebrow mb-4 block">Site generation</p>
+            <p className="eyebrow mb-4 block">Optional site draft</p>
             <h1 className="font-display text-[clamp(2rem,4.5vw,3.6rem)] font-semibold leading-[0.95] tracking-tightest text-ink">
               {kitRow.name}
             </h1>
             <p className="mt-4 text-base text-muted-strong">
-              Generate a branded landing page from your brand kit data using AI.
+              Generate a branded site draft from the completed kit. The brand
+              kit stays canonical; this page is a secondary extension of it.
             </p>
           </div>
           <div className="flex items-center gap-3 shrink-0">

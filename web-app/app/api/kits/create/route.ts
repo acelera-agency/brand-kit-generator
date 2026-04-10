@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  buildInspirationContext,
+  makeInspirationItem,
+  parseInspirationItems,
+} from "@/lib/founder-experience";
 import { getServerClient } from "@/lib/supabase";
-import type { BrandStage, SourceMaterialMeta } from "@/lib/types";
+import type {
+  BrandStage,
+  ExperienceMode,
+  SourceMaterialMeta,
+} from "@/lib/types";
 
 export const runtime = "nodejs";
 
@@ -17,9 +26,20 @@ const STAGE_IDS = [
 ] as const;
 
 const ALLOWED_BRAND_STAGES: ReadonlySet<BrandStage> = new Set(["new", "existing"]);
+const ALLOWED_EXPERIENCE_MODES: ReadonlySet<ExperienceMode> = new Set([
+  "guided",
+  "expert-led",
+]);
 
 function isBrandStage(value: unknown): value is BrandStage {
   return typeof value === "string" && ALLOWED_BRAND_STAGES.has(value as BrandStage);
+}
+
+function isExperienceMode(value: unknown): value is ExperienceMode {
+  return (
+    typeof value === "string" &&
+    ALLOWED_EXPERIENCE_MODES.has(value as ExperienceMode)
+  );
 }
 
 function isSourceMaterialMeta(value: unknown): value is SourceMaterialMeta {
@@ -46,8 +66,10 @@ export async function POST(req: NextRequest) {
   }
 
   let brandStage: BrandStage = "new";
+  let experienceMode: ExperienceMode = "guided";
   let sourceMaterial: string | null = null;
   let sourceMaterialMeta: SourceMaterialMeta | null = null;
+  let inspirationItems = [] as ReturnType<typeof parseInspirationItems>;
   let name: string | null = null;
   try {
     const body = await req.json();
@@ -74,6 +96,17 @@ export async function POST(req: NextRequest) {
         brandStage = candidate;
       }
 
+      if ("experienceMode" in body) {
+        const candidate = (body as { experienceMode: unknown }).experienceMode;
+        if (!isExperienceMode(candidate)) {
+          return NextResponse.json(
+            { error: "Invalid experienceMode: must be 'guided' or 'expert-led'" },
+            { status: 400 },
+          );
+        }
+        experienceMode = candidate;
+      }
+
       if ("sourceMaterial" in body) {
         const candidate = (body as { sourceMaterial: unknown }).sourceMaterial;
         if (candidate !== null && typeof candidate !== "string") {
@@ -97,6 +130,12 @@ export async function POST(req: NextRequest) {
 
         sourceMaterialMeta = candidate;
       }
+
+      if ("inspirationItems" in body) {
+        inspirationItems = parseInspirationItems(
+          (body as { inspirationItems: unknown }).inspirationItems,
+        );
+      }
     }
   } catch {
     return NextResponse.json(
@@ -118,6 +157,22 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  if (inspirationItems.length === 0 && sourceMaterial) {
+    inspirationItems = [
+      makeInspirationItem({
+        kind: "text",
+        label: "Starter inspiration",
+        text: sourceMaterial,
+      }),
+    ];
+  }
+
+  if (inspirationItems.length > 0) {
+    const builtContext = buildInspirationContext(inspirationItems);
+    sourceMaterial = builtContext.sourceMaterial;
+    sourceMaterialMeta = builtContext.sourceMaterialMeta;
+  }
+
   // Create the kit row
   const { data: kit, error: kitErr } = await supabase
     .from("brand_kits")
@@ -127,6 +182,11 @@ export async function POST(req: NextRequest) {
       kit: {},
       name,
       brand_stage: brandStage,
+      experience_mode: experienceMode,
+      handoff_requested_at:
+        experienceMode === "expert-led" ? new Date().toISOString() : null,
+      draft_checkpoint: "none",
+      inspiration_items: inspirationItems,
       source_material: sourceMaterial,
       source_material_meta: sourceMaterialMeta ?? {},
     })

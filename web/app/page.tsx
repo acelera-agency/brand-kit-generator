@@ -276,7 +276,7 @@ export default function Page() {
             04 / Open source
           </span>
           <div>
-            <h2 className="font-display font-semibold text-[clamp(2.25rem,4.5vw,3.75rem)] leading-[0.98] tracking-tight max-w-[18ch]">
+            <h2 className="font-display font-semibold text-paper text-[clamp(2.25rem,4.5vw,3.75rem)] leading-[0.98] tracking-tight max-w-[18ch]">
               The methodology is open source. The product runs it for you.
             </h2>
             <p className="text-paper/75 text-lg leading-relaxed mt-6 max-w-[55ch]">
@@ -483,18 +483,28 @@ export default function Page() {
             <h2 className="font-display font-semibold text-[clamp(1.75rem,3vw,2.5rem)] leading-tight tracking-tight mb-12">
               Questions you might have.
             </h2>
-            <dl className="space-y-8">
+            <div className="space-y-4">
               {FAQ.map((item) => (
-                <div key={item.q} className="border-t border-rule pt-6">
-                  <dt className="font-display font-semibold text-lg text-ink mb-3">
-                    {item.q}
-                  </dt>
-                  <dd className="text-muted-strong leading-relaxed">
-                    {item.a}
-                  </dd>
+                <div key={item.q} className="border-t border-rule">
+                  <details className="group">
+                    <summary className="list-none cursor-pointer py-6 flex items-start justify-between gap-6">
+                      <h3 className="font-display font-semibold text-lg text-ink">
+                        {item.q}
+                      </h3>
+                      <span
+                        aria-hidden="true"
+                        className="font-mono text-xl leading-none text-accent transition-transform duration-200 group-open:rotate-45"
+                      >
+                        +
+                      </span>
+                    </summary>
+                    <p className="pb-6 pr-10 text-muted-strong leading-relaxed">
+                      {item.a}
+                    </p>
+                  </details>
                 </div>
               ))}
-            </dl>
+            </div>
           </div>
         </div>
       </section>
@@ -502,7 +512,7 @@ export default function Page() {
       {/* ============ FOOTER ============ */}
       <footer className="bg-ink-deep text-paper">
         <div className="container-brand py-12 flex flex-wrap justify-between gap-6 font-mono text-xs uppercase tracking-widest text-paper/55">
-          <span>Brand Kit Generator · v0 · Coming soon</span>
+          <span>Brand Kit Generator · Coming soon</span>
           <span>
             Built by{" "}
             <a
