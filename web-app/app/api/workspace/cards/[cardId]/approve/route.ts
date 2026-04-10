@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { MODEL_GATE, getOpenAI } from "@/lib/openai";
 import { buildGateSystemPrompt } from "@/lib/gate-prompt";
+import { getDraftCheckpoint } from "@/lib/founder-experience";
 import {
   Stage0Schema,
   Stage1Schema,
@@ -206,9 +207,24 @@ export async function POST(
     .from("stage_progress")
     .upsert(progressUpserts, { onConflict: "kit_id,stage_id" });
 
+  const snapshot = await loadWorkspaceSnapshot(supabase, kitId);
+  const draftCheckpoint = getDraftCheckpoint(snapshot.progressByStage);
+  const complete = STAGE_ORDER.every(
+    (stageId) => snapshot.progressByStage[stageId] === "passed",
+  );
+
+  await supabase
+    .from("brand_kits")
+    .update({
+      draft_checkpoint: draftCheckpoint,
+      status: complete ? "completed" : "draft",
+    })
+    .eq("id", kitId);
+
   return NextResponse.json({
     passed: true,
     gateResult: { data: validation.data },
-    ...(await loadWorkspaceSnapshot(supabase, kitId)),
+    ...snapshot,
+    draftCheckpoint,
   });
 }

@@ -12,7 +12,7 @@ export function StartKitButton() {
         href="/dashboard/new"
         className="btn-primary px-5 py-3 text-sm sm:px-6 sm:py-3 text-center"
       >
-        Start a new kit
+        Start guided brand kit
       </Link>
     </div>
   );

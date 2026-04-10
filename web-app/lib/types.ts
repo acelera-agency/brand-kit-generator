@@ -4,8 +4,20 @@
  * and which gate-check anti-fabrication rules apply.
  */
 export type BrandStage = "new" | "existing";
+export type ExperienceMode = "guided" | "expert-led";
+export type DraftCheckpoint = "none" | "foundation" | "positioning" | "final";
 
 export type SourceKind = "url" | "text" | "pdf" | "github";
+
+export type InspirationItem = {
+  id: string;
+  kind: SourceKind;
+  label: string;
+  content: string;
+  charCount: number;
+  createdAt: string;
+  warnings: string[];
+};
 
 export type SourceMaterialMeta = {
   sources: Array<{
@@ -24,8 +36,12 @@ export interface BrandKit {
   ownerId: string;
   status: "draft" | "completed" | "published";
   brandStage: BrandStage;
+  experienceMode: ExperienceMode;
+  handoffRequestedAt?: Date | null;
+  draftCheckpoint: DraftCheckpoint;
   sourceMaterial?: string | null;
   sourceMaterialMeta?: SourceMaterialMeta | null;
+  inspirationItems: InspirationItem[];
   createdAt: Date;
   updatedAt: Date;
   stageProgress: Record<`stage_${0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8}`, "empty" | "in-progress" | "passed">;

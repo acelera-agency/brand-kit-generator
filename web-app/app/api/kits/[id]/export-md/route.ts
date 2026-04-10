@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { parseInspirationItems } from "@/lib/founder-experience";
 import { getServerClient } from "@/lib/supabase";
 import { exportToMarkdown } from "@/lib/export-markdown";
-import type { BrandKit, BrandStage, StoredKitData } from "@/lib/types";
+import type {
+  BrandKit,
+  BrandStage,
+  DraftCheckpoint,
+  ExperienceMode,
+  StoredKitData,
+} from "@/lib/types";
 
 export const runtime = "nodejs";
 
@@ -22,7 +29,9 @@ export async function GET(
   // Fetch kit + verify ownership
   const { data: kitRow, error: kitErr } = await supabase
     .from("brand_kits")
-    .select("id, owner_id, kit, created_at, updated_at, status, brand_stage")
+    .select(
+      "id, owner_id, kit, created_at, updated_at, status, brand_stage, experience_mode, draft_checkpoint, source_material, source_material_meta, inspiration_items",
+    )
     .eq("id", id)
     .single();
 
@@ -60,6 +69,18 @@ export async function GET(
     ownerId: kitRow.owner_id,
     status: kitRow.status as BrandKit["status"],
     brandStage: ((kitRow.brand_stage as BrandStage | null) ?? "new"),
+    experienceMode:
+      ((kitRow.experience_mode as ExperienceMode | null) ?? "guided"),
+    draftCheckpoint:
+      ((kitRow.draft_checkpoint as DraftCheckpoint | null) ?? "final"),
+    sourceMaterial:
+      typeof kitRow.source_material === "string" ? kitRow.source_material : null,
+    sourceMaterialMeta:
+      typeof kitRow.source_material_meta === "object" &&
+      kitRow.source_material_meta !== null
+        ? (kitRow.source_material_meta as BrandKit["sourceMaterialMeta"])
+        : null,
+    inspirationItems: parseInspirationItems(kitRow.inspiration_items),
     createdAt: new Date(kitRow.created_at),
     updatedAt: new Date(kitRow.updated_at),
     stageProgress: Object.fromEntries(
