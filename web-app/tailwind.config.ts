@@ -18,9 +18,9 @@ const config: Config = {
         "rule-strong": "#D4CFC1",
       },
       fontFamily: {
-        display: ['"Inter Tight"', "system-ui", "sans-serif"],
-        body: ["Inter", "system-ui", "sans-serif"],
-        mono: ['"JetBrains Mono"', "ui-monospace", "monospace"],
+        display: ["var(--font-display)", "system-ui", "sans-serif"],
+        body: ["var(--font-body)", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
       maxWidth: {
         container: "1320px",
