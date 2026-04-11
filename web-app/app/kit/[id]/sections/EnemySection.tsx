@@ -19,12 +19,12 @@ export function EnemySection({ data, kitId }: Props) {
   return (
     <section className="border-t border-rule pt-12 mt-12">
       <p className="eyebrow mb-4 block">01 — The enemy</p>
-      <div className="border-l-4 border-accent pl-6 max-w-[60ch]">
-        <p className="font-mono text-xs uppercase tracking-widest text-muted mb-3">
-          The brand exists to oppose
+      <div className="rounded-lg bg-ink p-8 max-w-[60ch]">
+        <p className="font-mono text-[10px] uppercase tracking-widest text-paper/50 mb-3">
+          This brand exists to oppose
         </p>
-        <p className="font-display text-3xl font-semibold leading-tight text-ink sm:text-4xl">
-          “{data}”
+        <p className="font-display text-2xl font-semibold leading-tight text-paper sm:text-3xl">
+          &ldquo;{data}&rdquo;
         </p>
       </div>
     </section>

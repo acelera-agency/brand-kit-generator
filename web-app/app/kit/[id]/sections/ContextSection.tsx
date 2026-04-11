@@ -7,13 +7,7 @@ type Props = {
 
 export function ContextSection({ data, kitId }: Props) {
   if (!data) {
-    return (
-      <EmptySectionPlaceholder
-        stageNumber={0}
-        stageLabel="Context & contradiction"
-        kitId={kitId}
-      />
-    );
+    return <EmptySectionPlaceholder stageNumber={0} stageLabel="Context & contradiction" kitId={kitId} />;
   }
 
   return (

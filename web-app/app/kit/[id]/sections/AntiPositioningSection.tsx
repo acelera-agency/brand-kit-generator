@@ -8,13 +8,7 @@ type Props = {
 
 export function AntiPositioningSection({ data, kitId }: Props) {
   if (!data || data.length === 0) {
-    return (
-      <EmptySectionPlaceholder
-        stageNumber={3}
-        stageLabel="Anti-positioning"
-        kitId={kitId}
-      />
-    );
+    return <EmptySectionPlaceholder stageNumber={3} stageLabel="Anti-positioning" kitId={kitId} />;
   }
 
   return (
@@ -23,25 +17,20 @@ export function AntiPositioningSection({ data, kitId }: Props) {
       <p className="text-sm text-muted-strong mb-6 max-w-[60ch]">
         What this brand will refuse, and what each refusal costs.
       </p>
-      <ul className="grid gap-4 sm:grid-cols-2">
+      <ul className="grid gap-3 sm:grid-cols-2">
         {data.map((item, idx) => (
-          <li
-            key={idx}
-            className="border border-rule-strong bg-paper-pure p-5 sm:p-6"
-          >
-            <p className="font-mono text-xs uppercase tracking-widest text-muted">
-              {`0${idx + 1}`.slice(-2)}
-            </p>
-            <p className="mt-3 font-display text-lg font-medium leading-snug text-ink">
-              {item.statement}
-            </p>
-            <p className="mt-3 text-sm text-muted-strong">
-              <span className="font-mono uppercase tracking-widest text-xs text-accent">
-                Cost
+          <li key={idx} className="rounded-lg border border-accent/20 bg-accent-soft/50 p-5 sm:p-6">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="inline-block h-5 w-5 rounded-full bg-accent/20 text-center font-mono text-[10px] leading-5 text-accent">
+                {idx + 1}
               </span>
-              {" — "}
-              {item.cost}
-            </p>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-accent">Refusal</span>
+            </div>
+            <p className="font-display text-lg font-medium leading-snug text-ink">{item.statement}</p>
+            <div className="mt-3 rounded bg-paper-pure px-3 py-2">
+              <span className="font-mono text-[10px] uppercase tracking-widest text-signal">Cost</span>
+              <p className="mt-1 text-sm text-muted-strong">{item.cost}</p>
+            </div>
           </li>
         ))}
       </ul>

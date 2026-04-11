@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { parseInspirationItems } from "@/lib/founder-experience";
-import { getServerClient } from "@/lib/supabase";
+import { requireKitRole } from "@/lib/kit-server";
 import { exportToMarkdown } from "@/lib/export-markdown";
 import type {
   BrandKit,
@@ -18,16 +18,20 @@ export async function GET(
 ) {
   const { id } = await params;
 
-  const supabase = await getServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
+  const access = await requireKitRole(id, "viewer");
+  if (!access.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Fetch kit + verify ownership
-  const { data: kitRow, error: kitErr } = await supabase
+  if (!access.kit) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  if (access.forbidden) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const { data: kitRow, error: kitErr } = await access.supabase
     .from("brand_kits")
     .select(
       "id, owner_id, kit, created_at, updated_at, status, brand_stage, experience_mode, draft_checkpoint, source_material, source_material_meta, inspiration_items",
@@ -35,12 +39,11 @@ export async function GET(
     .eq("id", id)
     .single();
 
-  if (kitErr || !kitRow || kitRow.owner_id !== user.id) {
+  if (kitErr || !kitRow) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  // Check completion: count how many stages are passed
-  const { data: progress } = await supabase
+  const { data: progress } = await access.supabase
     .from("stage_progress")
     .select("stage_id, status")
     .eq("kit_id", id);
