@@ -1,4 +1,4 @@
--- 0004_kit_name.sql -- give every brand kit a required, per-owner unique name
+-- 0013_kit_name.sql -- reconcile required kit names into migration history
 --
 -- Users were ending up with a wall of unnamed cards on the dashboard. We
 -- now require a human label at creation time, unique within each owner so
@@ -17,8 +17,19 @@ update public.brand_kits
 alter table public.brand_kits
   alter column name set not null;
 
-alter table public.brand_kits
-  add constraint brand_kits_name_not_blank check (length(btrim(name)) > 0);
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conrelid = 'public.brand_kits'::regclass
+      and conname = 'brand_kits_name_not_blank'
+  ) then
+    alter table public.brand_kits
+      add constraint brand_kits_name_not_blank check (length(btrim(name)) > 0);
+  end if;
+end;
+$$;
 
 create unique index if not exists brand_kits_owner_name_unique
   on public.brand_kits(owner_id, lower(btrim(name)));
