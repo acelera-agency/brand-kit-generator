@@ -4,8 +4,16 @@ import {
   type StageProgressStatus,
   type WorkspaceMessageRecord,
 } from "@/lib/workspace-view";
+import {
+  getDraftCheckpoint,
+  parseInspirationItems,
+} from "@/lib/founder-experience";
 import { STAGE_ORDER, type StageId } from "@/lib/stage-requirements";
-import type { StoredKitData } from "@/lib/types";
+import type {
+  DraftCheckpoint,
+  ExperienceMode,
+  StoredKitData,
+} from "@/lib/types";
 
 export function isStageId(value: unknown): value is StageId {
   return typeof value === "string" && STAGE_ORDER.includes(value as StageId);
@@ -17,7 +25,13 @@ export async function loadWorkspaceSnapshot(
 ) {
   const [{ data: kitRow }, { data: progressRows }, { data: rawMessages }] =
     await Promise.all([
-      supabase.from("brand_kits").select("kit").eq("id", kitId).single(),
+      supabase
+        .from("brand_kits")
+        .select(
+          "kit, experience_mode, handoff_requested_at, draft_checkpoint, inspiration_items",
+        )
+        .eq("id", kitId)
+        .single(),
       supabase
         .from("stage_progress")
         .select("stage_id, status")
@@ -61,6 +75,16 @@ export async function loadWorkspaceSnapshot(
 
   return {
     approvedKit: ((kitRow?.kit ?? {}) as StoredKitData) ?? {},
+    experienceMode:
+      ((kitRow?.experience_mode as ExperienceMode | null) ?? "guided"),
+    handoffRequestedAt:
+      typeof kitRow?.handoff_requested_at === "string"
+        ? kitRow.handoff_requested_at
+        : null,
+    draftCheckpoint:
+      ((kitRow?.draft_checkpoint as DraftCheckpoint | null) ??
+        getDraftCheckpoint(progressByStage)),
+    inspirationItems: parseInspirationItems(kitRow?.inspiration_items),
     progressByStage,
     workspaceState: buildWorkspaceState(messages, progressByStage),
   };

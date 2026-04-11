@@ -4,6 +4,7 @@ import {
   extractMaterialSources,
   type SourceMaterialPart,
 } from "@/lib/material-ingestion";
+import { makeInspirationItem } from "@/lib/founder-experience";
 import { getServerClient } from "@/lib/supabase";
 
 export const runtime = "nodejs";
@@ -72,5 +73,6 @@ export async function POST(req: Request) {
       ...result.sourceMaterialMeta,
       warnings: [...result.sourceMaterialMeta.warnings, ...warnings],
     },
+    inspirationItems: parts.map((part) => makeInspirationItem(part)),
   });
 }
