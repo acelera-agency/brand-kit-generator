@@ -22,6 +22,10 @@ const completeKit: StoredKitData = {
         "They have a clear revenue number but no clear positioning",
       ],
     },
+    secondary: {
+      role: "Startup founder",
+      signals: ["Pre-seed or seed stage", "Building first GTM motion"],
+    },
   },
   voice: {
     principles: ["Direct", "Evidence-first", "No filler"],
@@ -35,7 +39,7 @@ const completeKit: StoredKitData = {
       eyebrow: "Strategy studio",
       h1: "Brands built against the grain.",
       subhead: "We help founders who refuse to blend in build the brand their market remembers.",
-      ctaVariants: ["Start your kit"],
+      ctaVariants: ["Start your kit", "Book a call"],
     },
     coldOutreach: {
       subjects: ["Quick question about [brand]"],
@@ -52,7 +56,7 @@ const completeKit: StoredKitData = {
   },
   visual: {
     palette: [
-      { name: "paper", hex: "#fafaf8", role: "background" },
+      { name: "paper", hex: "#fafaf8", role: "background", narrative: "Clean canvas for bold ideas" },
       { name: "ink", hex: "#0b0f14", role: "primary" },
       { name: "accent", hex: "#0a6e3a", role: "accent" },
     ],
@@ -76,34 +80,123 @@ const completeKit: StoredKitData = {
 };
 
 describe("buildV0SitePrompt", () => {
-  it("produces a non-empty prompt from a complete kit", () => {
-    const prompt = buildV0SitePrompt(completeKit);
-    expect(prompt.length).toBeGreaterThan(500);
+  it("returns { system, message } with non-empty strings", () => {
+    const result = buildV0SitePrompt(completeKit);
+    expect(result.system.length).toBeGreaterThan(500);
+    expect(result.message.length).toBeGreaterThan(200);
   });
 
-  it("includes the hero headline", () => {
-    const prompt = buildV0SitePrompt(completeKit);
-    expect(prompt).toContain("Brands built against the grain.");
+  it("includes the hero headline in the user message", () => {
+    const { message } = buildV0SitePrompt(completeKit);
+    expect(message).toContain("Brands built against the grain.");
   });
 
-  it("includes palette hex values", () => {
-    const prompt = buildV0SitePrompt(completeKit);
-    expect(prompt).toContain("#fafaf8");
-    expect(prompt).toContain("#0b0f14");
+  it("includes palette hex values in both system and message", () => {
+    const { system, message } = buildV0SitePrompt(completeKit);
+    expect(system).toContain("#fafaf8");
+    expect(system).toContain("#0b0f14");
+    expect(message).toContain("#fafaf8");
+    expect(message).toContain("#0b0f14");
   });
 
-  it("includes typography families", () => {
-    const prompt = buildV0SitePrompt(completeKit);
-    expect(prompt).toContain("Inter Tight");
-    expect(prompt).toContain("Inter");
+  it("includes typography families in system", () => {
+    const { system } = buildV0SitePrompt(completeKit);
+    expect(system).toContain("Inter Tight");
+    expect(system).toContain("Inter");
   });
 
-  it("includes forbidden visuals", () => {
-    const prompt = buildV0SitePrompt(completeKit);
-    expect(prompt).toContain("No stock photos");
+  it("includes forbidden visuals in system", () => {
+    const { system } = buildV0SitePrompt(completeKit);
+    expect(system).toContain("No stock photos");
+    expect(system).toContain("No gradients");
+  });
+
+  it("includes ICP signals in system", () => {
+    const { system } = buildV0SitePrompt(completeKit);
+    expect(system).toContain("we've tried agencies before");
+    expect(system).toContain("Startup founder");
+  });
+
+  it("includes voice principles in system", () => {
+    const { system } = buildV0SitePrompt(completeKit);
+    expect(system).toContain("Direct");
+    expect(system).toContain("Evidence-first");
+    expect(system).toContain("No filler");
+  });
+
+  it("includes writing rules in system", () => {
+    const { system } = buildV0SitePrompt(completeKit);
+    expect(system).toContain("Max 20 words per sentence");
+    expect(system).toContain("No passive voice");
+  });
+
+  it("includes voice before/after examples in system", () => {
+    const { system } = buildV0SitePrompt(completeKit);
+    expect(system).toContain("We leverage cutting-edge solutions");
+    expect(system).toContain("We ship.");
+  });
+
+  it("includes social bios in user message", () => {
+    const { message } = buildV0SitePrompt(completeKit);
+    expect(message).toContain("Partner-led brand strategy studio.");
+    expect(message).toContain("Brands built against the grain.");
+  });
+
+  it("includes email signature in user message", () => {
+    const { message } = buildV0SitePrompt(completeKit);
+    expect(message).toContain("Nacho Estevo · Acelera");
+  });
+
+  it("includes first minute script in user message", () => {
+    const { message } = buildV0SitePrompt(completeKit);
+    expect(message).toContain("Here's what we do.");
+  });
+
+  it("includes categorized rules with reasons in system", () => {
+    const { system } = buildV0SitePrompt(completeKit);
+    expect(system).toContain("Never lead with a question");
+    expect(system).toContain("Questions feel like a trap");
+    expect(system).toContain("No blue");
+    expect(system).toContain("Every competitor is blue");
+  });
+
+  it("includes color narratives in system", () => {
+    const { system } = buildV0SitePrompt(completeKit);
+    expect(system).toContain("Clean canvas for bold ideas");
+  });
+
+  it("includes secondary CTA in user message", () => {
+    const { message } = buildV0SitePrompt(completeKit);
+    expect(message).toContain("Book a call");
+  });
+
+  it("includes email signature tone in user message", () => {
+    const { message } = buildV0SitePrompt(completeKit);
+    expect(message).toContain("Nacho Estevo · Acelera");
+  });
+
+  it("includes enemy in system", () => {
+    const { system } = buildV0SitePrompt(completeKit);
+    expect(system).toContain("billable-hour consultancy");
   });
 
   it("throws if kit is empty (no templates)", () => {
     expect(() => buildV0SitePrompt({} as StoredKitData)).toThrow();
+  });
+
+  it("works with minimal kit (only hero)", () => {
+    const minimal: StoredKitData = {
+      templates: {
+        homepageHero: {
+          eyebrow: "Test",
+          h1: "Test Headline",
+          subhead: "Test sub",
+          ctaVariants: ["Go"],
+        },
+      },
+    };
+    const result = buildV0SitePrompt(minimal);
+    expect(result.system.length).toBeGreaterThan(100);
+    expect(result.message).toContain("Test Headline");
   });
 });

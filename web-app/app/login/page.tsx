@@ -6,12 +6,14 @@ import { getServerClient } from "@/lib/supabase";
 type SearchParams = Promise<{
   sent?: string;
   error?: string;
+  next?: string;
 }>;
 
 async function requestMagicLink(formData: FormData) {
   "use server";
 
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const next = String(formData.get("next") ?? "").trim();
 
   if (!email) {
     redirect("/login?error=missing-email");
@@ -27,7 +29,9 @@ async function requestMagicLink(formData: FormData) {
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: `${origin}/auth/callback`,
+      emailRedirectTo: next
+        ? `${origin}/auth/callback?next=${encodeURIComponent(next)}`
+        : `${origin}/auth/callback`,
     },
   });
 
@@ -159,6 +163,12 @@ export default async function LoginPage({
                 className="mt-3 w-full border border-rule-strong bg-paper-pure px-4 py-4 text-base text-ink outline-none transition-colors placeholder:text-muted focus:border-accent"
               />
             </label>
+
+            <input
+              type="hidden"
+              name="next"
+              value={resolvedSearchParams.next ?? ""}
+            />
 
             <button type="submit" className="btn-primary w-full">
               Email me the link

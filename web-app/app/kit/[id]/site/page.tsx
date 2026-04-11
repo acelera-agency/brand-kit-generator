@@ -1,7 +1,9 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { getServerClient } from "@/lib/supabase";
-import { SitePreview } from "./SitePreview";
+import { getKitAccess } from "@/lib/kit-server";
+import { getOrInitQuota } from "@/lib/token-quota";
+import type { GenerationSettings } from "./types";
+import { SiteWorkspace } from "./SiteWorkspace";
 
 export const dynamic = "force-dynamic";
 
@@ -12,79 +14,98 @@ export default async function SitePage({
 }) {
   const { id } = await params;
 
-  const supabase = await getServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
+  const access = await getKitAccess(id);
+  if (!access.user) {
     redirect("/login");
   }
 
-  const { data: kitRow } = await supabase
-    .from("brand_kits")
-    .select("id, owner_id, name, status")
-    .eq("id", id)
-    .single();
-
-  if (!kitRow || kitRow.owner_id !== user.id) {
+  if (!access.kit || !access.role) {
     notFound();
   }
 
-  const { data: generation } = await supabase
-    .from("site_generations")
-    .select("id, status, demo_url, error_message, created_at")
-    .eq("kit_id", id)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const [generation, progressRows, quota] = await Promise.all([
+    access.supabase
+      .from("site_generations")
+      .select("id, status, demo_url, v0_chat_id, v0_version_id, error_message, created_at, generation_settings")
+      .eq("kit_id", id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    access.supabase
+      .from("stage_progress")
+      .select("stage_id, status")
+      .eq("kit_id", id),
+    getOrInitQuota(access.user.id),
+  ]);
 
-  const { data: progressRows } = await supabase
-    .from("stage_progress")
-    .select("stage_id, status")
-    .eq("kit_id", id);
-
-  const passedCount = (progressRows ?? []).filter(
+  const passedCount = (progressRows.data ?? []).filter(
     (r) => r.status === "passed",
   ).length;
 
   return (
-    <main className="container-brand min-h-screen py-10 sm:py-14">
-      <header className="border-b border-rule pb-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="eyebrow mb-4 block">Site generation</p>
-            <h1 className="font-display text-[clamp(2rem,4.5vw,3.6rem)] font-semibold leading-[0.95] tracking-tightest text-ink">
-              {kitRow.name}
-            </h1>
-            <p className="mt-4 text-base text-muted-strong">
-              Generate a branded landing page from your brand kit data using AI.
-            </p>
-          </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <Link
-              href={`/kit/${id}`}
-              className="btn-secondary px-4 py-2 text-sm"
-            >
-              Back to kit
-            </Link>
-          </div>
+    <div className="flex h-screen flex-col overflow-hidden bg-paper-pure">
+      <header className="flex h-12 shrink-0 items-center justify-between border-b border-rule bg-paper px-4">
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/kit/${id}`}
+            className="font-mono text-xs uppercase tracking-widest text-muted hover:text-ink transition-colors"
+          >
+            ← Kit
+          </Link>
+          <span className="h-4 w-px bg-rule" />
+          <h1 className="font-display text-sm font-semibold tracking-tight text-ink truncate max-w-[200px] sm:max-w-[360px]">
+            {access.kit.name}
+          </h1>
+        </div>
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/kit/${id}`}
+            className="font-mono text-[11px] uppercase tracking-widest text-muted hover:text-ink transition-colors"
+          >
+            Back to kit
+          </Link>
         </div>
       </header>
 
-      <section className="mt-10">
-        <SitePreview
+      {passedCount < 9 ? (
+        <div className="flex flex-1 items-center justify-center">
+          <div className="max-w-md text-center">
+            <p className="font-mono text-xs uppercase tracking-widest text-muted">
+              {passedCount} / 9 stages complete
+            </p>
+            <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight text-ink">
+              Complete your brand kit first
+            </h2>
+            <p className="mx-auto mt-3 max-w-[48ch] text-sm text-muted-strong">
+              Finish all 9 interview stages before generating a site.
+            </p>
+            <a
+              href={`/interview/${id}`}
+              className="btn-primary mt-6 inline-block px-6 py-3 text-sm"
+            >
+              Continue interview
+            </a>
+          </div>
+        </div>
+      ) : (
+        <SiteWorkspace
           kitId={id}
-          passedCount={passedCount}
-          generation={generation
+          currentUserEmail={access.user.email}
+          currentUserRole={access.role}
+          initialGeneration={generation.data
             ? {
-                id: generation.id,
-                status: generation.status as "pending" | "generating" | "completed" | "failed",
-                demoUrl: generation.demo_url,
-                error: generation.error_message,
+                id: generation.data.id,
+                status: generation.data.status as "pending" | "generating" | "completed" | "failed",
+                demoUrl: generation.data.demo_url,
+                chatId: generation.data.v0_chat_id,
+                versionId: generation.data.v0_version_id,
+                error: generation.data.error_message,
+                settings: (generation.data.generation_settings ?? {}) as GenerationSettings,
               }
             : null}
+          initialQuota={quota}
         />
-      </section>
-    </main>
+      )}
+    </div>
   );
 }

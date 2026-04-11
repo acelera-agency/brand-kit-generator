@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
-import { getServerClient } from "@/lib/supabase";
+import { hasKitRole } from "@/lib/kit-collaboration";
+import { getKitAccess } from "@/lib/kit-server";
 import type { StoredKitData } from "@/lib/types";
-import { STAGE_LABELS, STAGE_ORDER } from "@/lib/stage-requirements";
 import { ContextSection } from "./sections/ContextSection";
 import { EnemySection } from "./sections/EnemySection";
 import { StackSection } from "./sections/StackSection";
@@ -12,8 +12,21 @@ import { VoiceSection } from "./sections/VoiceSection";
 import { TemplatesSection } from "./sections/TemplatesSection";
 import { VisualSection } from "./sections/VisualSection";
 import { RulesSection } from "./sections/RulesSection";
+import { KitSidebarDesktop, KitSidebarMobile } from "./KitSidebar";
 
 export const dynamic = "force-dynamic";
+
+const SECTIONS = [
+  { id: "context", number: "00", label: "Context" },
+  { id: "enemy", number: "01", label: "Enemy" },
+  { id: "stack", number: "02", label: "Stack" },
+  { id: "anti", number: "03", label: "Anti-pos" },
+  { id: "icp", number: "04", label: "ICP" },
+  { id: "voice", number: "05", label: "Voice" },
+  { id: "templates", number: "06", label: "Templates" },
+  { id: "visual", number: "07", label: "Visual" },
+  { id: "rules", number: "08", label: "Rules" },
+] as const;
 
 export default async function KitViewPage({
   params,
@@ -22,167 +35,182 @@ export default async function KitViewPage({
 }) {
   const { id } = await params;
 
-  const supabase = await getServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
+  const access = await getKitAccess(id);
+  if (!access.user) {
     redirect("/login");
   }
 
-  const { data: kitRow } = await supabase
+  if (!access.kit || !access.role) {
+    notFound();
+  }
+
+  const { data: kitRow } = await access.supabase
     .from("brand_kits")
     .select("id, owner_id, status, kit, created_at, updated_at")
     .eq("id", id)
     .single();
 
-  if (!kitRow || kitRow.owner_id !== user.id) {
+  if (!kitRow) {
     notFound();
   }
 
-  const { data: progressRows } = await supabase
+  const { data: progressRows } = await access.supabase
     .from("stage_progress")
     .select("stage_id, status")
     .eq("kit_id", id);
 
-  const progressByStage = Object.fromEntries(
-    (progressRows ?? []).map((r) => [r.stage_id, r.status]),
-  );
-  const passedCount = Object.values(progressByStage).filter(
-    (s) => s === "passed",
+  const passedCount = (progressRows ?? []).filter(
+    (r) => r.status === "passed",
   ).length;
   const isComplete = passedCount >= 9;
-
+  const canEditKit = hasKitRole(access.role, "editor");
   const kit = (kitRow.kit ?? {}) as StoredKitData;
 
+  const tocItems = SECTIONS.map((s) => ({
+    id: s.id,
+    number: s.number,
+    label: s.label,
+    hasData: Boolean(
+      s.id === "context" ? kit.beforeAfter
+        : s.id === "enemy" ? kit.enemy
+          : s.id === "stack" ? kit.stack
+            : s.id === "anti" ? kit.antiPositioning?.length
+              : s.id === "icp" ? kit.icp?.primary?.signals?.length
+                : s.id === "voice" ? kit.voice
+                  : s.id === "templates" ? kit.templates
+                    : s.id === "visual" ? kit.visual
+                      : kit.rules,
+    ),
+  }));
+
   return (
-    <main className="container-brand min-h-screen py-10 sm:py-14">
-      {/* Hero */}
-      <header className="border-b border-rule pb-10 sm:pb-14">
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-          <div className="max-w-[60ch]">
-            <p className="eyebrow mb-4 block">Brand kit / read-only view</p>
-            <h1 className="font-display text-[clamp(2.4rem,5vw,4.4rem)] font-semibold leading-[0.95] tracking-tightest text-ink">
-              {kit.enemy ? "A brand built against" : "Brand kit"}
+    <div className="min-h-screen bg-paper">
+      <div className="h-1.5 w-full bg-rule">
+        <div
+          className="h-full bg-accent transition-[width] duration-500"
+          style={{ width: `${(passedCount / 9) * 100}%` }}
+        />
+      </div>
+
+      <header className="border-b border-rule bg-paper-pure">
+        <div className="mx-auto flex max-w-container items-center justify-between px-6 py-4 sm:px-10 lg:px-16">
+          <div className="flex items-center gap-4 min-w-0">
+            <Link
+              href="/dashboard"
+              className="shrink-0 font-mono text-[11px] uppercase tracking-widest text-muted hover:text-ink transition-colors"
+            >
+              ← Dashboard
+            </Link>
+            <span className="h-4 w-px shrink-0 bg-rule" />
+            <h1 className="font-display text-lg font-semibold tracking-tight text-ink truncate">
               {kit.enemy ? (
                 <>
-                  {" "}
-                  <span className="text-accent">
-                    {kit.enemy.replace(/[.!?]$/, "")}
-                  </span>
-                  .
+                  Against <span className="text-accent">{kit.enemy.replace(/[.!?]$/, "")}</span>
                 </>
               ) : (
-                <>
-                  {" "}
-                  <span className="font-mono text-base text-muted align-middle">
-                    {id.slice(0, 8)}
-                  </span>
-                </>
+                access.kit.name
               )}
             </h1>
-            {kit.beforeAfter ? (
-              <p className="mt-6 text-base text-muted-strong sm:text-lg whitespace-pre-wrap">
-                {kit.beforeAfter}
-              </p>
-            ) : (
-              <p className="mt-6 text-sm text-muted-strong">
-                {passedCount} of 9 stages passed. Each section below fills in
-                as you complete the interview.
-              </p>
-            )}
           </div>
 
-          <div className="flex flex-col items-stretch gap-2 sm:items-end shrink-0">
-            <p className="font-mono text-xs uppercase tracking-widest text-muted text-right">
-              {passedCount} / 9 passed
-            </p>
+          <div className="flex items-center gap-2 shrink-0">
             {isComplete ? (
-              <div className="flex flex-col gap-2 sm:items-end">
+              <>
                 <Link
                   href={`/kit/${id}/site`}
-                  className="btn-primary px-5 py-3 text-sm sm:px-6 sm:py-3"
+                  className="btn-primary px-4 py-2 text-[11px]"
                 >
-                  Generate site
+                  {canEditKit ? "Generate site" : "Site workspace"}
                 </Link>
                 <a
                   href={`/api/kits/${id}/export-md`}
-                  className="btn-secondary px-5 py-3 text-sm sm:px-6 sm:py-3"
+                  className="btn-secondary px-4 py-2 text-[11px]"
                 >
-                  Download markdown
+                  Export
                 </a>
-              </div>
+              </>
             ) : (
               <Link
                 href={`/interview/${id}`}
-                className="btn-primary px-5 py-3 text-sm sm:px-6 sm:py-3"
+                className="btn-primary px-4 py-2 text-[11px]"
               >
                 Continue interview
               </Link>
             )}
-            <Link
-              href="/dashboard"
-              className="btn-secondary px-4 py-2 text-xs sm:text-sm"
-            >
-              Back to dashboard
-            </Link>
           </div>
         </div>
       </header>
 
-      {/* Sections */}
-      <ContextSection data={kit.beforeAfter} kitId={id} />
-      <EnemySection data={kit.enemy} kitId={id} />
-      <StackSection data={kit.stack} kitId={id} />
-      <AntiPositioningSection data={kit.antiPositioning} kitId={id} />
-      <IcpSection data={kit.icp} kitId={id} />
-      <VoiceSection data={kit.voice} kitId={id} />
-      <TemplatesSection data={kit.templates} kitId={id} />
-      <VisualSection data={kit.visual} kitId={id} />
-      <RulesSection data={kit.rules} kitId={id} />
+      <div className="mx-auto flex max-w-container gap-12 px-6 py-10 sm:px-10 lg:px-16">
+        <KitSidebarDesktop items={tocItems} passedCount={passedCount} />
 
-      {/* Footer: stage progress appendix */}
-      <footer className="border-t border-rule pt-12 mt-16">
-        <p className="eyebrow mb-4 block">Appendix — Stage progress</p>
-        <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {STAGE_ORDER.map((sid, idx) => {
-            const status = progressByStage[sid] ?? "empty";
-            return (
-              <li
-                key={sid}
-                className="border border-rule-strong bg-paper-pure p-4"
-              >
-                <div className="flex items-center justify-between border-b border-rule pb-2">
-                  <p className="font-mono text-xs uppercase tracking-widest text-muted">
-                    {`0${idx}`.slice(-2)}
+        <main className="min-w-0 flex-1 max-w-[780px]">
+          <KitSidebarMobile items={tocItems} passedCount={passedCount} />
+          {(kit.beforeAfter || kit.enemy) && (
+            <div className="mb-16">
+              {kit.enemy && (
+                <div className="mb-8 rounded-lg bg-ink p-8 text-paper">
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-paper/50">
+                    The enemy
                   </p>
-                  <p
-                    className={`font-mono text-xs uppercase tracking-widest ${
-                      status === "passed"
-                        ? "text-accent"
-                        : status === "in-progress"
-                          ? "text-ink"
-                          : "text-muted"
-                    }`}
-                  >
-                    {status}
+                  <p className="mt-3 font-display text-2xl font-semibold leading-tight sm:text-3xl">
+                    &ldquo;{kit.enemy}&rdquo;
                   </p>
                 </div>
-                <p className="mt-3 font-display text-base font-medium text-ink">
-                  {STAGE_LABELS[sid]}
-                </p>
-              </li>
-            );
-          })}
-        </ol>
+              )}
 
-        <div className="mt-10 flex items-center justify-between border-t border-rule pt-6 text-sm text-muted-strong">
-          <span>{user.email}</span>
-          <Link href="/dashboard" className="btn-secondary px-4 py-2 text-xs">
-            Back to dashboard
-          </Link>
-        </div>
-      </footer>
-    </main>
+              {kit.beforeAfter && (
+                <p className="font-display text-xl font-medium leading-relaxed text-ink sm:text-2xl max-w-[60ch] whitespace-pre-wrap">
+                  {kit.beforeAfter}
+                </p>
+              )}
+
+              {kit.stack && (
+                <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                  {(["character", "promise", "method"] as const).map((key) => (
+                    <div key={key} className="rounded-lg border border-rule-strong bg-paper-pure p-5 shadow-sm">
+                      <p className="font-mono text-[10px] uppercase tracking-widest text-muted">
+                        {key}
+                      </p>
+                      <p className="mt-2 font-display text-base font-medium text-ink">
+                        {kit.stack![key]}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div id="context">
+            <ContextSection data={kit.beforeAfter} kitId={id} />
+          </div>
+          <div id="enemy">
+            <EnemySection data={kit.enemy} kitId={id} />
+          </div>
+          <div id="stack">
+            <StackSection data={kit.stack} kitId={id} />
+          </div>
+          <div id="anti">
+            <AntiPositioningSection data={kit.antiPositioning} kitId={id} />
+          </div>
+          <div id="icp">
+            <IcpSection data={kit.icp} kitId={id} />
+          </div>
+          <div id="voice">
+            <VoiceSection data={kit.voice} kitId={id} />
+          </div>
+          <div id="templates">
+            <TemplatesSection data={kit.templates} kitId={id} />
+          </div>
+          <div id="visual">
+            <VisualSection data={kit.visual} kitId={id} />
+          </div>
+          <div id="rules">
+            <RulesSection data={kit.rules} kitId={id} />
+          </div>
+        </main>
+      </div>
+    </div>
   );
 }
