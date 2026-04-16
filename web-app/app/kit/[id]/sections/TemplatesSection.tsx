@@ -1,5 +1,4 @@
 import type { BrandKit, VoiceLintSectionResult } from "@/lib/types";
-import type { EditableFieldPath } from "@/lib/kit-field-paths";
 import { InlineEditableText } from "../InlineEditableText";
 import { ApplyLintBanner } from "./ApplyLintBanner";
 import { EmptySectionPlaceholder } from "./EmptySectionPlaceholder";
@@ -78,14 +77,11 @@ export function TemplatesSection({ data, kitId, canEdit, lint }: Props) {
               <ApplyLintBanner
                 kitId={kitId}
                 result={lint?.homepageHero}
-                resolve={(v) => {
-                  const candidates: Array<{ path: EditableFieldPath; currentValue: string }> = [
-                    { path: "templates.homepageHero.h1", currentValue: data.homepageHero.h1 },
-                    { path: "templates.homepageHero.subhead", currentValue: data.homepageHero.subhead },
-                    { path: "templates.homepageHero.eyebrow", currentValue: data.homepageHero.eyebrow },
-                  ];
-                  return candidates.find((c) => c.currentValue.includes(v.snippet)) ?? null;
-                }}
+                candidates={[
+                  { path: "templates.homepageHero.h1", currentValue: data.homepageHero.h1 },
+                  { path: "templates.homepageHero.subhead", currentValue: data.homepageHero.subhead },
+                  { path: "templates.homepageHero.eyebrow", currentValue: data.homepageHero.eyebrow },
+                ]}
               />
             ) : (
               <LintBanner result={lint?.homepageHero} />
@@ -137,10 +133,12 @@ export function TemplatesSection({ data, kitId, canEdit, lint }: Props) {
               <ApplyLintBanner
                 kitId={kitId}
                 result={lint?.coldOutreachBody}
-                resolve={() => ({
-                  path: "templates.coldOutreach.body",
-                  currentValue: data.coldOutreach.body,
-                })}
+                candidates={[
+                  {
+                    path: "templates.coldOutreach.body",
+                    currentValue: data.coldOutreach.body,
+                  },
+                ]}
               />
             ) : (
               <LintBanner result={lint?.coldOutreachBody} />
@@ -175,10 +173,12 @@ export function TemplatesSection({ data, kitId, canEdit, lint }: Props) {
               <ApplyLintBanner
                 kitId={kitId}
                 result={lint?.linkedinBio}
-                resolve={() => ({
-                  path: "templates.socialBios.linkedin",
-                  currentValue: data.socialBios!.linkedin,
-                })}
+                candidates={[
+                  {
+                    path: "templates.socialBios.linkedin",
+                    currentValue: data.socialBios!.linkedin,
+                  },
+                ]}
               />
             ) : (
               <LintBanner result={lint?.linkedinBio} />
@@ -207,10 +207,12 @@ export function TemplatesSection({ data, kitId, canEdit, lint }: Props) {
               <ApplyLintBanner
                 kitId={kitId}
                 result={lint?.firstMinute}
-                resolve={() => ({
-                  path: "templates.firstMinute.script",
-                  currentValue: data.firstMinute.script,
-                })}
+                candidates={[
+                  {
+                    path: "templates.firstMinute.script",
+                    currentValue: data.firstMinute.script,
+                  },
+                ]}
               />
             ) : (
               <LintBanner result={lint?.firstMinute} />

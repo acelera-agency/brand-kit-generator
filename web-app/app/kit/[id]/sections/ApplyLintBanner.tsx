@@ -8,27 +8,27 @@ import type {
 import type { EditableFieldPath } from "@/lib/kit-field-paths";
 import { LintBanner, type ApplyResult } from "./LintBanner";
 
+export type FieldCandidate = {
+  path: EditableFieldPath;
+  currentValue: string;
+};
+
 type Props = {
   kitId: string;
   result: VoiceLintSectionResult | undefined;
-  // Map a violation to the field path and current text to patch. For sections
-  // whose lint key covers multiple sub-fields (e.g. the homepage hero block),
-  // resolve which sub-field contains the snippet at apply time.
-  resolve: (v: VoiceLintViolation) => { path: EditableFieldPath; currentValue: string } | null;
+  // Ordered list of candidate fields the snippet might live in. The first one
+  // that contains the snippet wins; if none match, we fall back to editing
+  // manually. Fully serializable so this component can be mounted from a
+  // server component.
+  candidates: FieldCandidate[];
 };
 
-export function ApplyLintBanner({ kitId, result, resolve }: Props) {
+export function ApplyLintBanner({ kitId, result, candidates }: Props) {
   const router = useRouter();
 
   const onApply = async (v: VoiceLintViolation): Promise<ApplyResult> => {
-    const target = resolve(v);
+    const target = candidates.find((c) => c.currentValue.includes(v.snippet));
     if (!target) {
-      return {
-        applied: false,
-        reason: "Could not locate the field for this snippet.",
-      };
-    }
-    if (!target.currentValue.includes(v.snippet)) {
       return {
         applied: false,
         reason: "Snippet no longer present — edit manually.",

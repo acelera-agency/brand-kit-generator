@@ -32,7 +32,7 @@ export function ContextSection({ data, kitId, canEdit, lint }: Props) {
           <ApplyLintBanner
             kitId={kitId}
             result={lint}
-            resolve={() => ({ path: "beforeAfter", currentValue: data })}
+            candidates={[{ path: "beforeAfter", currentValue: data }]}
           />
         ) : (
           <LintBanner result={lint} />
