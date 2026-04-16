@@ -1,12 +1,14 @@
-import type { BrandKit } from "@/lib/types";
+import type { BrandKit, VoiceLintSectionResult } from "@/lib/types";
 import { EmptySectionPlaceholder } from "./EmptySectionPlaceholder";
+import { LintBanner } from "./LintBanner";
 
 type Props = {
   data: BrandKit["templates"] | undefined;
   kitId: string;
+  lint?: Record<string, VoiceLintSectionResult>;
 };
 
-export function TemplatesSection({ data, kitId }: Props) {
+export function TemplatesSection({ data, kitId, lint }: Props) {
   if (!data) {
     return <EmptySectionPlaceholder stageNumber={6} stageLabel="Application templates" kitId={kitId} />;
   }
@@ -46,6 +48,7 @@ export function TemplatesSection({ data, kitId }: Props) {
                 ) : null}
               </div>
             </div>
+            <LintBanner result={lint?.homepageHero} />
           </div>
         ) : null}
 
@@ -71,6 +74,7 @@ export function TemplatesSection({ data, kitId }: Props) {
                 <p className="mt-4 text-sm text-muted-strong italic">{data.coldOutreach.signOff}</p>
               ) : null}
             </div>
+            <LintBanner result={lint?.coldOutreachBody} />
           </div>
         ) : null}
 
@@ -87,6 +91,7 @@ export function TemplatesSection({ data, kitId }: Props) {
                 ) : null,
               )}
             </div>
+            <LintBanner result={lint?.linkedinBio} />
           </div>
         ) : null}
 
@@ -99,6 +104,7 @@ export function TemplatesSection({ data, kitId }: Props) {
                 <p className="mt-4 font-mono text-[10px] uppercase tracking-widest text-muted">~{data.firstMinute.wordCount} words</p>
               ) : null}
             </div>
+            <LintBanner result={lint?.firstMinute} />
           </div>
         ) : null}
 
