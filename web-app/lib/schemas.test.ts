@@ -204,6 +204,64 @@ describe("Stage4Schema", () => {
 
     expect(result.success).toBe(false);
   });
+
+  it("accepts an ICP with bad-fit signals", () => {
+    const result = Stage4Schema.safeParse({
+      icp: {
+        primary: {
+          signals: [
+            "They own a messy handoff between sales and delivery.",
+            "They can name the internal metric they need to shrink.",
+            "They ask how the team will keep the system after launch.",
+            "They have already tried tooling without changing behavior.",
+          ],
+        },
+        badFitSignals: [
+          "Asks for hourly rates before discovery.",
+          "No technical decision-maker in the room.",
+          "Wants a pilot for free to evaluate.",
+        ],
+      },
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects fewer than 3 bad-fit signals when the field is provided", () => {
+    const result = Stage4Schema.safeParse({
+      icp: {
+        primary: {
+          signals: [
+            "They own a messy handoff between sales and delivery.",
+            "They can name the internal metric they need to shrink.",
+            "They ask how the team will keep the system after launch.",
+            "They have already tried tooling without changing behavior.",
+          ],
+        },
+        badFitSignals: ["Asks for hourly rates before discovery."],
+      },
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects bad-fit signals that are too short", () => {
+    const result = Stage4Schema.safeParse({
+      icp: {
+        primary: {
+          signals: [
+            "They own a messy handoff between sales and delivery.",
+            "They can name the internal metric they need to shrink.",
+            "They ask how the team will keep the system after launch.",
+            "They have already tried tooling without changing behavior.",
+          ],
+        },
+        badFitSignals: ["short", "tiny", "weak"],
+      },
+    });
+
+    expect(result.success).toBe(false);
+  });
 });
 
 describe("Stage5Schema", () => {

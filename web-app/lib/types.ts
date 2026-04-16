@@ -71,6 +71,7 @@ export interface BrandKit {
       role: string;
       signals: string[];
     };
+    badFitSignals?: string[];
   };
 
   voice: {

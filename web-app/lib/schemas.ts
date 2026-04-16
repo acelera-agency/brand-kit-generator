@@ -82,6 +82,11 @@ export const Stage4Schema = z.object({
         signals: z.array(z.string().min(8, "Each signal needs to be specific.")),
       })
       .optional(),
+    badFitSignals: z
+      .array(z.string().min(8, "Each bad-fit signal needs to be specific."))
+      .min(3, "Need at least 3 bad-fit signals if you define any.")
+      .max(6, "Keep bad-fit signals to 6 or fewer.")
+      .optional(),
   }),
 });
 
