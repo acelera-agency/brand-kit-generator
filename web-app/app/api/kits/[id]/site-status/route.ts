@@ -8,6 +8,8 @@ import type { StoredKitData } from "@/lib/types";
 
 export const runtime = "nodejs";
 
+const STALE_LOCK_MS = 2 * 60 * 1000;
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -29,7 +31,7 @@ export async function GET(
 
   const { data: generation } = await access.supabase
     .from("site_generations")
-    .select("id, status, demo_url, v0_chat_id, v0_version_id, error_message, created_at, generation_settings")
+    .select("id, status, demo_url, v0_chat_id, v0_version_id, error_message, created_at, updated_at, generation_settings")
     .eq("kit_id", kitId)
     .order("created_at", { ascending: false })
     .limit(1)
@@ -39,13 +41,25 @@ export async function GET(
     return NextResponse.json({ status: "none" });
   }
 
-  if (generation.status === "generating" && !generation.v0_chat_id) {
+  const lockIsStalePending =
+    generation.v0_chat_id === "pending" &&
+    generation.status === "generating" &&
+    typeof generation.updated_at === "string" &&
+    Date.now() - new Date(generation.updated_at).getTime() > STALE_LOCK_MS;
+
+  if (
+    generation.status === "generating" &&
+    (!generation.v0_chat_id || lockIsStalePending)
+  ) {
     const svc = getServiceClient();
+    const staleCutoff = new Date(Date.now() - STALE_LOCK_MS).toISOString();
     const { data: locked } = await svc
       .from("site_generations")
       .update({ v0_chat_id: "pending" })
       .eq("id", generation.id)
-      .is("v0_chat_id", null)
+      .or(
+        `v0_chat_id.is.null,and(v0_chat_id.eq.pending,updated_at.lt.${staleCutoff})`,
+      )
       .select("id")
       .maybeSingle();
 
