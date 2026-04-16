@@ -7,8 +7,9 @@ import { buildV0SitePrompt } from "@/lib/v0-prompt";
 import type { StoredKitData } from "@/lib/types";
 
 export const runtime = "nodejs";
+export const maxDuration = 300;
 
-const STALE_LOCK_MS = 2 * 60 * 1000;
+const STALE_LOCK_MS = 6 * 60 * 1000;
 
 export async function GET(
   _req: NextRequest,
