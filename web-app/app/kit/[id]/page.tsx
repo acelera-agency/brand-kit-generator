@@ -239,14 +239,15 @@ export default async function KitViewPage({
             <ContextSection
               data={kit.beforeAfter}
               kitId={id}
+              canEdit={canEditKit}
               lint={kit.lint?.sections.context}
             />
           </div>
           <div id="enemy">
-            <EnemySection data={kit.enemy} kitId={id} />
+            <EnemySection data={kit.enemy} kitId={id} canEdit={canEditKit} />
           </div>
           <div id="stack">
-            <StackSection data={kit.stack} kitId={id} />
+            <StackSection data={kit.stack} kitId={id} canEdit={canEditKit} />
           </div>
           <div id="anti">
             <AntiPositioningSection data={kit.antiPositioning} kitId={id} />
@@ -261,6 +262,7 @@ export default async function KitViewPage({
             <TemplatesSection
               data={kit.templates}
               kitId={id}
+              canEdit={canEditKit}
               lint={kit.lint?.sections.templates}
             />
           </div>
