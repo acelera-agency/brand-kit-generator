@@ -38,6 +38,9 @@ export function exportToMarkdown(kit: BrandKit): string {
             bulletList(kit.icp.secondary.signals),
           ]
         : []),
+      ...(kit.icp.badFitSignals && kit.icp.badFitSignals.length > 0
+        ? ["### Anti-signals", bulletList(kit.icp.badFitSignals)]
+        : []),
     ].join("\n\n"),
     [
       "## Voice",

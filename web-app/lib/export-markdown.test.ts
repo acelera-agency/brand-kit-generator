@@ -346,4 +346,28 @@ describe("exportToMarkdown", () => {
     expect(md).toContain(fixture.rules.outreach[0].rule);
     expect(md).toContain(fixture.rules.visual[0].reason);
   });
+
+  it("includes an Anti-signals block when bad-fit signals are present", () => {
+    const kit: BrandKit = {
+      ...fixture,
+      icp: {
+        ...fixture.icp,
+        badFitSignals: [
+          "Asks for hourly rates before discovery.",
+          "No technical decision-maker in the room.",
+          "Wants the pilot for free to evaluate.",
+        ],
+      },
+    };
+    const md = exportToMarkdown(kit);
+
+    expect(md).toContain("### Anti-signals");
+    expect(md).toContain("- Asks for hourly rates before discovery.");
+  });
+
+  it("omits the Anti-signals heading when no bad-fit signals are defined", () => {
+    const md = exportToMarkdown(fixture);
+
+    expect(md).not.toContain("### Anti-signals");
+  });
 });
