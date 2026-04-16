@@ -180,10 +180,14 @@ ${COMMON_RULES}`,
   stage_4: {
     new: {
       question:
-        "Forget job titles. What 4-6 behaviors would tell you, in the first 10 minutes of a conversation, that someone is your ideal customer? Things you can verify by listening, not by checking LinkedIn.",
+        "Two lists, no job titles. (a) 4-6 behaviors that tell you someone IS a fit in the first 10 minutes of a conversation. (b) 3-6 bad-fit signals — behaviors that tell you to refuse or disqualify. Things you verify by listening, not by checking LinkedIn.",
       lookingFor:
-        "An ICP defined by 4-6 primary behavioral signals (NOT demographics or job titles). Optionally a secondary ICP with a different role and its own signals.",
-      gateInstruction: `Extract an 'icp' object with a 'primary' object containing a 'signals' array (4-6 strings, each a behavioral signal the user actually described). Optionally include a 'secondary' object with 'role' and 'signals' fields if the user explicitly named a secondary ICP. Reject demographic-only answers ("mid-market SaaS, 50-200 employees") — those are not signals. Each signal must be a behavior the user said is observable in a first conversation. For NEW brands the user is committing to who they WILL serve, not describing who they HAVE served. If the user has not provided real signals, return an empty object {}.
+        "An ICP with 4-6 primary behavioral signals AND 3-6 bad-fit signals that disqualify (anti-signals). Optionally a secondary ICP with a different role and its own signals.",
+      gateInstruction: `Extract an 'icp' object with:
+- 'primary.signals': 4-6 behavioral signals the user described (their own words).
+- 'badFitSignals': 3-6 disqualifying signals the user described. Only include real statements the user made — do not invent entries to reach the minimum. If the user did not describe bad-fit signals at all, omit the field so the gate can ask for them.
+- Optional 'secondary' object with 'role' and 'signals' if the user named a secondary ICP.
+Reject demographic-only answers ("mid-market SaaS, 50-200 employees") — those are not signals. Each signal must be a behavior the user said is observable in a first conversation. For NEW brands the user is committing to who they WILL serve, not describing who they HAVE served. If the user has not provided real signals, return an empty object {}.
 
 ${NEW_BRAND_ANTI_FABRICATION}
 
@@ -191,10 +195,14 @@ ${COMMON_RULES}`,
     },
     existing: {
       question:
-        "Forget job titles. What 4-6 behavioral signals tell you a customer is a fit? Things you can verify in the first 10 minutes of a discovery call.",
+        "Two lists, no job titles. (a) 4-6 behavioral signals that tell you a customer IS a fit. (b) 3-6 bad-fit signals — behaviors that tell you to refuse or disqualify. Both verifiable in the first 10 minutes of a discovery call.",
       lookingFor:
-        "An ICP defined by 4-6 primary behavioral signals (NOT demographics or job titles). Optionally a secondary ICP with a different role and its own signals.",
-      gateInstruction: `Extract an 'icp' object with a 'primary' object containing a 'signals' array (4-6 strings, each a behavioral signal the user actually described). Optionally include a 'secondary' object with 'role' and 'signals' fields if the user explicitly named a secondary ICP. Reject demographic-only answers ("mid-market SaaS, 50-200 employees") — those are not signals. Each signal must be a behavior the user said is observable in a first call. If the user has not provided real signals, return an empty object {}.
+        "An ICP with 4-6 primary behavioral signals AND 3-6 bad-fit signals that disqualify. Optionally a secondary ICP with a different role and its own signals.",
+      gateInstruction: `Extract an 'icp' object with:
+- 'primary.signals': 4-6 behavioral signals the user described.
+- 'badFitSignals': 3-6 disqualifying signals the user described. Only include real statements the user made — do not invent entries to reach the minimum. If the user did not describe bad-fit signals at all, omit the field so the gate can ask for them.
+- Optional 'secondary' object with 'role' and 'signals' if the user named a secondary ICP.
+Reject demographic-only answers ("mid-market SaaS, 50-200 employees") — those are not signals. Each signal must be a behavior the user said is observable in a first call. If the user has not provided real signals, return an empty object {}.
 
 ${COMMON_RULES}`,
     },
