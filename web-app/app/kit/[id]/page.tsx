@@ -13,6 +13,7 @@ import { TemplatesSection } from "./sections/TemplatesSection";
 import { VisualSection } from "./sections/VisualSection";
 import { RulesSection } from "./sections/RulesSection";
 import { KitSidebarDesktop, KitSidebarMobile } from "./KitSidebar";
+import { ReviewVoiceButton } from "./ReviewVoiceButton";
 
 export const dynamic = "force-dynamic";
 
@@ -151,6 +152,13 @@ export default async function KitViewPage({
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
+            {canEditKit && kit.voice ? (
+              <ReviewVoiceButton
+                kitId={id}
+                hasVoice={Boolean(kit.voice)}
+                lastReviewedAt={kit.lint?.generatedAt ?? null}
+              />
+            ) : null}
             {isComplete ? (
               <>
                 <Link
@@ -228,13 +236,18 @@ export default async function KitViewPage({
           )}
 
           <div id="context">
-            <ContextSection data={kit.beforeAfter} kitId={id} />
+            <ContextSection
+              data={kit.beforeAfter}
+              kitId={id}
+              canEdit={canEditKit}
+              lint={kit.lint?.sections.context}
+            />
           </div>
           <div id="enemy">
-            <EnemySection data={kit.enemy} kitId={id} />
+            <EnemySection data={kit.enemy} kitId={id} canEdit={canEditKit} />
           </div>
           <div id="stack">
-            <StackSection data={kit.stack} kitId={id} />
+            <StackSection data={kit.stack} kitId={id} canEdit={canEditKit} />
           </div>
           <div id="anti">
             <AntiPositioningSection data={kit.antiPositioning} kitId={id} />
@@ -246,7 +259,12 @@ export default async function KitViewPage({
             <VoiceSection data={kit.voice} kitId={id} />
           </div>
           <div id="templates">
-            <TemplatesSection data={kit.templates} kitId={id} />
+            <TemplatesSection
+              data={kit.templates}
+              kitId={id}
+              canEdit={canEditKit}
+              lint={kit.lint?.sections.templates}
+            />
           </div>
           <div id="visual">
             <VisualSection data={kit.visual} kitId={id} />

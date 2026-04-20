@@ -26,6 +26,7 @@ import {
 } from "@/lib/workspace-view";
 import { FounderStageComposer } from "./FounderStageComposer";
 import { InspirationLockerPanel } from "./InspirationLockerPanel";
+import { PostStage5ContextReviewCard } from "./PostStage5ContextReviewCard";
 import { ProgressiveSnapshotCard } from "./ProgressiveSnapshotCard";
 
 type WorkspaceSnapshot = {
@@ -358,6 +359,10 @@ export function FounderInterviewFlow({
           );
         })}
       </section>
+
+      {progressByStage["stage_5"] === "passed" && approvedKit.beforeAfter ? (
+        <PostStage5ContextReviewCard kitId={kitId} />
+      ) : null}
 
       <section className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)]">
         <div className="space-y-6">

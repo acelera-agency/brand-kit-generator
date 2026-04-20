@@ -71,6 +71,7 @@ export interface BrandKit {
       role: string;
       signals: string[];
     };
+    badFitSignals?: string[];
   };
 
   voice: {
@@ -207,6 +208,35 @@ export type StoredKitData = {
   templates?: BrandKit["templates"];
   visual?: BrandKit["visual"];
   rules?: BrandKit["rules"];
+  // Voice-consistency lint results, refreshed on demand via POST /api/kits/:id/lint
+  lint?: VoiceLintResult;
+};
+
+export type VoiceLintViolationKind =
+  | "dont-phrase"
+  | "word-count"
+  | "tone-mismatch"
+  | "register-mismatch";
+
+export type VoiceLintViolation = {
+  kind: VoiceLintViolationKind;
+  snippet: string;
+  ruleReference: string;
+  suggestedRewrite: string;
+};
+
+export type VoiceLintSectionResult = {
+  target: string;
+  violations: VoiceLintViolation[];
+};
+
+export type VoiceLintResult = {
+  generatedAt: string;
+  voiceHash: string;
+  sections: {
+    context?: VoiceLintSectionResult;
+    templates?: Record<string, VoiceLintSectionResult>;
+  };
 };
 
 export type SiteGenerationStatus = "pending" | "generating" | "completed" | "failed";
