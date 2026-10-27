@@ -62,6 +62,9 @@ function buildSystemMessage(
     if (kit.icp.primary.signals.length) {
       parts.push(`Primary audience signals:\n${kit.icp.primary.signals.map((s) => `  - ${s}`).join("\n")}`);
     }
+    if (kit.icp.badFitSignals?.length) {
+      parts.push(`Bad-fit audience signals to repel:\n${kit.icp.badFitSignals.map((s) => `  - ${s}`).join("\n")}`);
+    }
     if (kit.icp.secondary) {
       parts.push(`Secondary audience: ${kit.icp.secondary.role}\nSignals:\n${kit.icp.secondary.signals.map((s) => `  - ${s}`).join("\n")}`);
     }
@@ -182,8 +185,6 @@ function buildUserMessage(
   palette: NonNullable<StoredKitData["visual"]>["palette"],
   displayFont: string,
 ): string {
-  const sections: string[] = [];
-
   const bg = palette.find((p) => p.role === "background")?.hex ?? "#ffffff";
   const primary = palette.find((p) => p.role === "primary")?.hex ?? "#000000";
   const accent = palette.find((p) => p.role === "accent")?.hex ?? "#0066ff";

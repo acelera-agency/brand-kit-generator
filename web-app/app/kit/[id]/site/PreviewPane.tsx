@@ -31,7 +31,7 @@ export function PreviewPane({
           <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted">
             Preview
           </p>
-          <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight text-ink">
+        <h2 className="mt-3 font-display text-2xl font-semibold text-ink">
             {currentLabel ? `${currentLabel} workspace preview` : "Live site preview"}
           </h2>
           <p className="mt-2 text-sm text-muted-strong">

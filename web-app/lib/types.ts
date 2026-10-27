@@ -67,6 +67,7 @@ export interface BrandKit {
     primary: {
       signals: string[];
     };
+    badFitSignals?: string[];
     secondary?: {
       role: string;
       signals: string[];
@@ -210,12 +211,33 @@ export type StoredKitData = {
 };
 
 export type SiteGenerationStatus = "pending" | "generating" | "completed" | "failed";
+export type ProgressiveSiteMode = "progressive" | "final";
+export type LiveSiteStatusValue =
+  | "none"
+  | "queued"
+  | "generating"
+  | "running"
+  | "completed"
+  | "failed"
+  | "paused";
+
+export type LiveSiteStatus = {
+  status: LiveSiteStatusValue;
+  generationId?: string;
+  iterationId?: string;
+  sourceStageId?: `stage_${0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8}`;
+  demoUrl?: string | null;
+  error?: string | null;
+};
+
+export type ProgressiveSiteQueueResult = LiveSiteStatus;
 
 export interface SiteGeneration {
   id: string;
   kitId: string;
   ownerId: string;
   status: SiteGenerationStatus;
+  generationMode: ProgressiveSiteMode;
   v0ProjectId: string | null;
   v0ChatId: string | null;
   v0VersionId: string | null;

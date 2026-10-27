@@ -5,17 +5,17 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#0B0F14",
-        "ink-deep": "#06090C",
-        paper: "#F7F5F0",
+        ink: "#0A0F14",
+        "ink-deep": "#05080C",
+        paper: "#F3F6F4",
         "paper-pure": "#FFFFFF",
-        accent: "#1F6E5A",
-        "accent-soft": "#D7E5DE",
-        signal: "#C2410C",
-        muted: "#6B7280",
-        "muted-strong": "#4B5563",
-        rule: "#E5E1D8",
-        "rule-strong": "#D4CFC1",
+        accent: "#087A68",
+        "accent-soft": "#D9EEE9",
+        signal: "#9A3412",
+        muted: "#68737C",
+        "muted-strong": "#3F4A54",
+        rule: "#DDE5E0",
+        "rule-strong": "#C7D2CC",
       },
       fontFamily: {
         display: ["var(--font-display)", "system-ui", "sans-serif"],
@@ -26,9 +26,6 @@ const config: Config = {
         container: "1320px",
       },
       letterSpacing: {
-        tightest: "-0.035em",
-        tighter: "-0.025em",
-        tight: "-0.015em",
         wide: "0.06em",
         wider: "0.08em",
         widest: "0.1em",

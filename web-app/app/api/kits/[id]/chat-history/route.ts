@@ -27,6 +27,7 @@ export async function GET(
     .from("site_generations")
     .select("id, v0_chat_id, status")
     .eq("kit_id", kitId)
+    .eq("generation_mode", "final")
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle<{ id: string; v0_chat_id: string | null; status: string }>();

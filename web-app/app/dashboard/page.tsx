@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { isDemoModeEnabled } from "@/lib/demo-mode";
 import { getServerClient } from "@/lib/supabase";
 import type { DraftCheckpoint, ExperienceMode } from "@/lib/types";
 import { DeleteKitButton } from "./DeleteKitButton";
@@ -56,6 +57,7 @@ function formatDate(iso: string): string {
 }
 
 export default async function DashboardPage() {
+  const demoModeEnabled = isDemoModeEnabled();
   const supabase = await getServerClient();
   const {
     data: { user },
@@ -107,17 +109,24 @@ export default async function DashboardPage() {
       <header className="flex flex-col gap-6 border-b border-rule pb-8 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="eyebrow mb-4 block">Founder dashboard / brand kits</p>
-          <h1 className="font-display text-[clamp(2rem,4.5vw,3.6rem)] font-semibold leading-[0.95] tracking-tightest text-ink">
-            Build the kit first. Decide on the site later.
+          <h1 className="font-display text-4xl font-semibold leading-none text-ink sm:text-5xl lg:text-6xl">
+            Build the kit while the draft takes shape.
           </h1>
           <p className="mt-4 max-w-[60ch] text-base text-muted-strong sm:text-lg">
             Each kit moves through a guided founder flow with usable
-            checkpoints before the full methodology is done. Expert-led kits
+            checkpoints and a live v0 draft before the full methodology is done. Expert-led kits
             stay visible here too, but the public path remains simple.
           </p>
         </div>
 
-        <StartKitButton />
+        <div className="flex flex-wrap gap-3">
+          {demoModeEnabled ? (
+            <Link href="/demo" className="btn-secondary px-5 py-3 text-xs">
+              Run hackathon demo
+            </Link>
+          ) : null}
+          <StartKitButton />
+        </div>
       </header>
 
       <section className="mt-8 grid gap-4 sm:grid-cols-3">
@@ -140,7 +149,7 @@ export default async function DashboardPage() {
             {completedCount}
           </p>
           <p className="mt-2 text-sm text-muted-strong">
-            Ready for export, review, and optional site generation.
+            Ready for export, review, and final site generation.
           </p>
         </div>
         <div className="border border-rule-strong bg-paper-pure p-5">
@@ -162,7 +171,7 @@ export default async function DashboardPage() {
             <p className="font-mono text-xs uppercase tracking-widest text-muted">
               No founder kits yet
             </p>
-            <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight text-ink">
+            <h2 className="mt-3 font-display text-2xl font-semibold text-ink">
               Start the first guided brand kit.
             </h2>
             <p className="mx-auto mt-3 max-w-[48ch] text-sm text-muted-strong">
@@ -236,7 +245,7 @@ export default async function DashboardPage() {
                         href={`/kit/${kit.id}/site`}
                         className="btn-secondary px-4 py-2 text-sm"
                       >
-                        Generate optional site
+                        Final site workspace
                       </Link>
                     ) : null}
                     {kit.experience_mode === "expert-led" ? (

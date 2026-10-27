@@ -75,6 +75,7 @@ export async function POST(
     .from("site_generations")
     .select("status")
     .eq("kit_id", kitId)
+    .eq("generation_mode", "final")
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle<{ status: "pending" | "generating" | "completed" | "failed" }>();
@@ -116,6 +117,7 @@ export async function POST(
       kit_id: kitId,
       owner_id: access.kit.ownerId,
       status: "generating",
+      generation_mode: "final",
       prompt_hash: promptResult.message.length.toString(36),
       generated_files: [],
       generation_settings: settings,

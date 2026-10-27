@@ -45,7 +45,7 @@ export function MembersPanel({
           <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted">
             Members
           </p>
-          <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight text-ink">
+        <h2 className="mt-3 font-display text-2xl font-semibold text-ink">
             Shared access
           </h2>
         </div>

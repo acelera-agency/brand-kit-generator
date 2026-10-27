@@ -1,31 +1,31 @@
 import type { Metadata } from "next";
-import { Inter, Inter_Tight, JetBrains_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
+const geist = Geist({
   subsets: ["latin"],
   variable: "--font-body",
 });
 
-const interTight = Inter_Tight({
+const geistDisplay = Geist({
   subsets: ["latin"],
   variable: "--font-display",
 });
 
-const jetBrainsMono = JetBrains_Mono({
+const geistMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
 });
 
 export const metadata: Metadata = {
-  title: "Brand Kit Generator — by Acelera",
+  title: "Brand Kit Generator by Acelera",
   description:
-    "Brand kits that decide for you. Not decorate for you. An opinionated 8-stage interview that produces a kit you can actually use to make daily decisions. Open source methodology, hosted product coming soon.",
+    "A chat-first brand workspace where each founder answer sharpens the kit and updates a live v0 draft.",
   metadataBase: new URL("https://brandkitgenerator.com"),
   openGraph: {
-    title: "Brand Kit Generator — by Acelera",
+    title: "Brand Kit Generator by Acelera",
     description:
-      "Brand kits that decide for you. Not decorate for you. An opinionated 8-stage interview.",
+      "A chat-first brand workspace where each founder answer sharpens the kit and updates a live v0 draft.",
     type: "website",
   },
 };
@@ -37,7 +37,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${interTight.variable} ${jetBrainsMono.variable}`}>
+      <body className={`${geist.variable} ${geistDisplay.variable} ${geistMono.variable}`}>
         {children}
       </body>
     </html>

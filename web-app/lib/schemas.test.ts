@@ -188,6 +188,45 @@ describe("Stage4Schema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("accepts optional bad-fit signals", () => {
+    const result = Stage4Schema.safeParse({
+      icp: {
+        primary: {
+          signals: [
+            "They own a messy handoff between sales and delivery.",
+            "They can name the internal metric they need to shrink.",
+            "They ask how the team will keep the system after launch.",
+            "They have already tried tooling without changing behavior.",
+          ],
+        },
+        badFitSignals: [
+          "They ask for AI ideas without naming an owner.",
+          "They want a vendor to own the process forever.",
+        ],
+      },
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects vague bad-fit signals", () => {
+    const result = Stage4Schema.safeParse({
+      icp: {
+        primary: {
+          signals: [
+            "They own a messy handoff between sales and delivery.",
+            "They can name the internal metric they need to shrink.",
+            "They ask how the team will keep the system after launch.",
+            "They have already tried tooling without changing behavior.",
+          ],
+        },
+        badFitSignals: ["bad"],
+      },
+    });
+
+    expect(result.success).toBe(false);
+  });
+
   it("rejects empty signals", () => {
     const result = Stage4Schema.safeParse({
       icp: {
@@ -707,8 +746,7 @@ describe("BrandKitSchema", () => {
   });
 
   it("rejects a BrandKit missing the context section", () => {
-    const withoutContext = { ...validBrandKit };
-    delete withoutContext.context;
+    const withoutContext = { ...validBrandKit, context: undefined };
     const result = BrandKitSchema.safeParse(withoutContext);
 
     expect(result.success).toBe(false);

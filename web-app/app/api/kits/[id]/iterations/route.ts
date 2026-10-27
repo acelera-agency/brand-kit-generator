@@ -40,6 +40,7 @@ export async function GET(
     .from("site_generations")
     .select("id")
     .eq("kit_id", kitId)
+    .eq("generation_mode", "final")
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle<{ id: string }>();

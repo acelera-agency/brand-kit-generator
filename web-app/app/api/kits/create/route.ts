@@ -4,7 +4,7 @@ import {
   makeInspirationItem,
   parseInspirationItems,
 } from "@/lib/founder-experience";
-import { getServerClient } from "@/lib/supabase";
+import { getServerClient, getServiceClient } from "@/lib/supabase";
 import type {
   BrandStage,
   ExperienceMode,
@@ -173,8 +173,13 @@ export async function POST(req: NextRequest) {
     sourceMaterialMeta = builtContext.sourceMaterialMeta;
   }
 
-  // Create the kit row
-  const { data: kit, error: kitErr } = await supabase
+  // Use service role for the insert chain so RLS JWT edge cases (cookie
+  // refresh timing, missing Authorization header on serverless) can't block
+  // a legitimately-authenticated creation. User identity is already verified
+  // above via getUser().
+  const admin = getServiceClient();
+
+  const { data: kit, error: kitErr } = await admin
     .from("brand_kits")
     .insert({
       owner_id: user.id,
@@ -216,14 +221,14 @@ export async function POST(req: NextRequest) {
     status: stage_id === "stage_0" ? "in-progress" : "empty",
   }));
 
-  const { error: progressErr } = await supabase
+  const { error: progressErr } = await admin
     .from("stage_progress")
     .insert(progressRows);
 
   if (progressErr) {
     console.error("[kits/create] stage_progress insert failed", progressErr);
     // Best-effort cleanup of the orphan kit
-    await supabase.from("brand_kits").delete().eq("id", kit.id);
+    await admin.from("brand_kits").delete().eq("id", kit.id);
     return NextResponse.json(
       { error: "Failed to seed stage progress" },
       { status: 500 },

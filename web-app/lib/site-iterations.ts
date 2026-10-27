@@ -12,6 +12,8 @@ type InsertSiteIterationInput = {
   tokensCharged: number;
   usageSyncedAt?: string | null;
   sourceChatId?: string | null;
+  sourceStageId?: string | null;
+  inputHash?: string | null;
 };
 
 export async function insertNextSiteIteration(
@@ -48,6 +50,8 @@ export async function insertNextSiteIteration(
         tokens_charged: input.tokensCharged,
         usage_synced_at: input.usageSyncedAt ?? null,
         source_chat_id: input.sourceChatId ?? null,
+        source_stage_id: input.sourceStageId ?? null,
+        input_hash: input.inputHash ?? null,
       })
       .select("id, turn_index")
       .single<{ id: string; turn_index: number }>();

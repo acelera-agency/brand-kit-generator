@@ -80,7 +80,7 @@ export function buildProgressiveSnapshot(
   return {
     title: "Final brand kit ready",
     description:
-      "The full methodology is complete. Review the finished kit, export it, and generate a site only if you need that next.",
+      "The full methodology is complete. Review the finished kit, export it, and keep refining the live draft into the final site when useful.",
     blocks: [
       {
         title: "What is complete",

@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh pr create --title 'feat: voice-lint, bad-fit signals, inline edit & apply-from-lint' --body ' *)"
+    ]
+  }
+}

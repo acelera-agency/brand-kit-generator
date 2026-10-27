@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { getDemoFallbackUrl, isDemoModeEnabled } from "@/lib/demo-mode";
 import { getDraftCheckpoint } from "@/lib/founder-experience";
 import type {
   BrandStage,
@@ -7,16 +8,20 @@ import type {
 } from "@/lib/types";
 import { getServerClient } from "@/lib/supabase";
 import { loadWorkspaceSnapshot } from "@/app/api/workspace/_shared";
+import { getProgressiveSiteStatus } from "@/lib/progressive-site";
 import { FounderInterviewFlow } from "./FounderInterviewFlow";
 
 export const dynamic = "force-dynamic";
 
 export default async function InterviewPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ kitId: string }>;
+  searchParams?: Promise<{ demo?: string }>;
 }) {
   const { kitId } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
 
   const supabase = await getServerClient();
   const {
@@ -37,7 +42,14 @@ export default async function InterviewPage({
     notFound();
   }
 
-  const snapshot = await loadWorkspaceSnapshot(supabase, kitId);
+  const [snapshot, liveSite] = await Promise.all([
+    loadWorkspaceSnapshot(supabase, kitId),
+    getProgressiveSiteStatus(kitId),
+  ]);
+  const demoFallbackUrl =
+    resolvedSearchParams.demo === "1" && isDemoModeEnabled()
+      ? getDemoFallbackUrl()
+      : null;
 
   return (
     <FounderInterviewFlow
@@ -60,6 +72,8 @@ export default async function InterviewPage({
           getDraftCheckpoint(snapshot.progressByStage))
       }
       initialInspirationItems={snapshot.inspirationItems}
+      initialLiveSite={liveSite}
+      demoFallbackUrl={demoFallbackUrl}
     />
   );
 }

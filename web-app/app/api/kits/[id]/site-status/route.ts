@@ -34,6 +34,7 @@ export async function GET(
     .from("site_generations")
     .select("id, status, demo_url, v0_chat_id, v0_version_id, error_message, created_at, updated_at, generation_settings")
     .eq("kit_id", kitId)
+    .eq("generation_mode", "final")
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();

@@ -22,7 +22,7 @@ export function WorkspaceShell({ kitId, passedCount, toast, children }: Props) {
             <p className="font-mono text-xs uppercase tracking-widest text-muted">
               Interview workspace / kit {kitId.slice(0, 8)}
             </p>
-            <h1 className="mt-1 font-display text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+            <h1 className="mt-1 font-display text-2xl font-semibold text-ink sm:text-3xl">
               Progressive foundation workspace
             </h1>
           </div>

@@ -76,6 +76,9 @@ export const Stage4Schema = z.object({
         .min(4, "Need at least 4 behavioral signals.")
         .max(6, "Keep the primary ICP to 6 signals or fewer."),
     }),
+    badFitSignals: z
+      .array(z.string().min(8, "Each bad-fit signal needs to be specific."))
+      .optional(),
     secondary: z
       .object({
         role: z.string().min(1, "Secondary ICP needs a role."),

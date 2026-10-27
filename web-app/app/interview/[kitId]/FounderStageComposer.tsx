@@ -7,6 +7,8 @@ type Props = {
   values: Record<string, string>;
   freeText: string;
   busy: boolean;
+  bare?: boolean;
+  showHeader?: boolean;
   onFieldChange: (key: string, value: string) => void;
   onFreeTextChange: (value: string) => void;
 };
@@ -16,12 +18,15 @@ export function FounderStageComposer({
   values,
   freeText,
   busy,
+  bare = false,
+  showHeader = true,
   onFieldChange,
   onFreeTextChange,
 }: Props) {
-  return (
-    <section className="border border-rule-strong bg-paper-pure p-5 sm:p-6">
-      <div className="border-b border-rule pb-5">
+  const content = (
+    <>
+      {showHeader ? (
+        <div className="border-b border-rule pb-5">
         <p className="font-mono text-xs uppercase tracking-widest text-accent">
           Structured answer blocks
         </p>
@@ -30,8 +35,9 @@ export function FounderStageComposer({
           your own words in the free-text field at the end.
         </p>
       </div>
+      ) : null}
 
-      <div className="mt-6 grid gap-5">
+      <div className={`${showHeader ? "mt-6" : "mt-5"} grid gap-5`}>
         {config.fields.map((field) => (
           <label key={field.key} className="block">
             <span className="font-mono text-xs uppercase tracking-widest text-muted">
@@ -65,6 +71,16 @@ export function FounderStageComposer({
           />
         </label>
       </div>
+    </>
+  );
+
+  if (bare) {
+    return content;
+  }
+
+  return (
+    <section className="border border-rule-strong bg-paper-pure p-5 sm:p-6">
+      {content}
     </section>
   );
 }

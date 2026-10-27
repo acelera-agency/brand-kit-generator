@@ -1,6 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getKitAccess } from "@/lib/kit-server";
+import { getProgressiveSiteStatus } from "@/lib/progressive-site";
 import { getOrInitQuota } from "@/lib/token-quota";
 import type { GenerationSettings } from "./types";
 import { SiteWorkspace } from "./SiteWorkspace";
@@ -23,11 +24,12 @@ export default async function SitePage({
     notFound();
   }
 
-  const [generation, progressRows, quota] = await Promise.all([
+  const [generation, progressRows, quota, liveSite] = await Promise.all([
     access.supabase
       .from("site_generations")
       .select("id, status, demo_url, v0_chat_id, v0_version_id, error_message, created_at, generation_settings")
       .eq("kit_id", id)
+      .eq("generation_mode", "final")
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
@@ -36,6 +38,7 @@ export default async function SitePage({
       .select("stage_id, status")
       .eq("kit_id", id),
     getOrInitQuota(access.user.id),
+    getProgressiveSiteStatus(id),
   ]);
 
   const passedCount = (progressRows.data ?? []).filter(
@@ -53,7 +56,7 @@ export default async function SitePage({
             ← Kit
           </Link>
           <span className="h-4 w-px bg-rule" />
-          <h1 className="font-display text-sm font-semibold tracking-tight text-ink truncate max-w-[200px] sm:max-w-[360px]">
+            <h1 className="font-display text-sm font-semibold text-ink truncate max-w-[200px] sm:max-w-[360px]">
             {access.kit.name}
           </h1>
         </div>
@@ -73,18 +76,31 @@ export default async function SitePage({
             <p className="font-mono text-xs uppercase tracking-widest text-muted">
               {passedCount} / 9 stages complete
             </p>
-            <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight text-ink">
-              Complete your brand kit first
+        <h2 className="mt-3 font-display text-2xl font-semibold text-ink">
+              Your live draft is built from the interview
             </h2>
             <p className="mx-auto mt-3 max-w-[48ch] text-sm text-muted-strong">
-              Finish all 9 interview stages before generating a site.
+              The final site workspace unlocks after the complete kit, but the
+              progressive v0 draft updates as milestones are approved.
             </p>
-            <a
-              href={`/interview/${id}`}
-              className="btn-primary mt-6 inline-block px-6 py-3 text-sm"
-            >
-              Continue interview
-            </a>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <a
+                href={`/interview/${id}`}
+                className="btn-primary inline-block px-6 py-3 text-sm"
+              >
+                Continue interview
+              </a>
+              {liveSite.demoUrl ? (
+                <a
+                  href={liveSite.demoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-secondary inline-block px-6 py-3 text-sm"
+                >
+                  Open live draft
+                </a>
+              ) : null}
+            </div>
           </div>
         </div>
       ) : (

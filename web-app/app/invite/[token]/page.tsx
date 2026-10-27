@@ -34,7 +34,7 @@ export default async function InvitePage({
       <main className="container-brand min-h-screen py-10 sm:py-14">
         <section className="border border-rule-strong bg-paper p-8 sm:p-12">
           <p className="eyebrow mb-4 block">Invitation expired</p>
-          <h1 className="font-display text-4xl font-semibold tracking-tight text-ink">
+            <h1 className="font-display text-4xl font-semibold text-ink">
             This invite is no longer valid.
           </h1>
           <p className="mt-4 max-w-[54ch] text-base text-muted-strong">
@@ -50,7 +50,7 @@ export default async function InvitePage({
       <main className="container-brand min-h-screen py-10 sm:py-14">
         <section className="border border-rule-strong bg-paper p-8 sm:p-12">
           <p className="eyebrow mb-4 block">Email mismatch</p>
-          <h1 className="font-display text-4xl font-semibold tracking-tight text-ink">
+            <h1 className="font-display text-4xl font-semibold text-ink">
             Sign in with the invited email.
           </h1>
           <p className="mt-4 max-w-[54ch] text-base text-muted-strong">
@@ -70,7 +70,7 @@ export default async function InvitePage({
     <main className="container-brand min-h-screen py-10 sm:py-14">
       <section className="border border-rule-strong bg-paper p-8 sm:p-12">
         <p className="eyebrow mb-4 block">Could not accept invite</p>
-        <h1 className="font-display text-4xl font-semibold tracking-tight text-ink">
+        <h1 className="font-display text-4xl font-semibold text-ink">
           The invitation could not be completed.
         </h1>
         <p className="mt-4 max-w-[54ch] text-base text-muted-strong">

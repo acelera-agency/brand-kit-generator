@@ -127,7 +127,7 @@ export default async function KitViewPage({
               ← Dashboard
             </Link>
             <span className="h-4 w-px shrink-0 bg-rule" />
-            <h1 className="font-display text-lg font-semibold tracking-tight text-ink truncate">
+              <h1 className="font-display text-lg font-semibold text-ink truncate">
               {kit.enemy ? (
                 <>
                   Against <span className="text-accent">{kit.enemy.replace(/[.!?]$/, "")}</span>

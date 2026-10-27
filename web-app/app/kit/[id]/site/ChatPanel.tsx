@@ -164,7 +164,7 @@ export function ChatPanel({
             <p className="font-mono text-[11px] uppercase tracking-widest text-muted">
               Site generator
             </p>
-            <h2 className="mt-3 font-display text-lg font-semibold tracking-tight text-ink">
+      <h2 className="mt-3 font-display text-lg font-semibold text-ink">
               Generate your branded site
             </h2>
             <p className="mt-2 max-w-[40ch] text-sm text-muted-strong">

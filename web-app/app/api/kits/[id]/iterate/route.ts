@@ -39,6 +39,7 @@ export async function POST(
     .from("site_generations")
     .select("id, status, v0_chat_id")
     .eq("kit_id", kitId)
+    .eq("generation_mode", "final")
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle<GenerationRow>();

@@ -79,7 +79,7 @@ export default async function LoginPage({
         <section className="flex flex-col justify-between gap-10">
           <div>
             <p className="eyebrow mb-6 block">Access / magic link</p>
-            <h1 className="max-w-[12ch] font-display text-[clamp(2.3rem,5vw,4.8rem)] font-semibold leading-[0.92] tracking-tightest text-ink">
+            <h1 className="max-w-[12ch] font-display text-4xl font-semibold leading-tight text-ink sm:text-6xl">
               Enter the interview room without a password.
             </h1>
             <p className="mt-5 max-w-[56ch] text-base text-muted-strong sm:text-lg">
@@ -128,7 +128,7 @@ export default async function LoginPage({
               <p className="font-mono text-xs uppercase tracking-widest text-muted">
                 Authentication
               </p>
-              <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight text-ink">
+            <h2 className="mt-3 font-display text-3xl font-semibold text-ink">
                 Send magic link
               </h2>
             </div>

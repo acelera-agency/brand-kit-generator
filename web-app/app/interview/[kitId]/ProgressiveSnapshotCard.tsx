@@ -27,7 +27,7 @@ export function ProgressiveSnapshotCard({ snapshot }: Props) {
         <p className="font-mono text-xs uppercase tracking-widest text-accent">
           Progressive draft
         </p>
-        <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight text-ink">
+        <h2 className="mt-2 font-display text-2xl font-semibold text-ink">
           {snapshot.title}
         </h2>
         <p className="mt-3 text-sm text-muted-strong">{snapshot.description}</p>

@@ -1,6 +1,89 @@
 import type { BrandKit } from "./types";
 
+const FORBIDDEN_GENERIC_WORDS = [
+  "innovation",
+  "disruption",
+  "transformation",
+  "next-generation",
+  "cutting-edge",
+  "seamless",
+  "holistic",
+  "end-to-end",
+  "empowering",
+  "revolutionary",
+  "unleash",
+  "unlock",
+  "supercharge",
+];
+
 const bulletList = (items: string[]) => items.map((item) => `- ${item}`).join("\n");
+
+const escapeRegExp = (value: string) =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const wordCount = (value: string) =>
+  value.match(/[A-Za-z0-9]+(?:'[A-Za-z0-9]+)?/g)?.length ?? 0;
+
+const splitSentences = (value: string) =>
+  value
+    .replace(/\s+/g, " ")
+    .match(/[^.!?]+[.!?]?/g)
+    ?.map((sentence) => sentence.trim())
+    .filter(Boolean) ?? [];
+
+const truncate = (value: string, maxLength = 140) =>
+  value.length > maxLength ? `${value.slice(0, maxLength - 3)}...` : value;
+
+function findForbiddenGenericWords(text: string): string[] {
+  return FORBIDDEN_GENERIC_WORDS.filter((word) => {
+    const pattern = new RegExp(
+      `(^|[^a-z0-9])${escapeRegExp(word)}([^a-z0-9]|$)`,
+      "i",
+    );
+    return pattern.test(text);
+  });
+}
+
+function extractSentenceWordLimit(rules: string[]): number | null {
+  for (const rule of rules) {
+    const match = rule.match(
+      /(?:under|fewer than|max(?:imum)?|no more than)\s+(\d+)\s+words?/i,
+    );
+    if (match) {
+      return Number(match[1]);
+    }
+  }
+
+  return null;
+}
+
+function draftQaFlags(kit: BrandKit): string[] {
+  const flags: string[] = [];
+  const forbiddenContextWords = findForbiddenGenericWords(
+    kit.context.beforeAfter,
+  );
+
+  if (forbiddenContextWords.length) {
+    flags.push(
+      `Context uses forbidden generic words: ${forbiddenContextWords.join(", ")}.`,
+    );
+  }
+
+  const sentenceLimit = extractSentenceWordLimit(kit.voice.writingRules);
+  if (sentenceLimit) {
+    const longSentence = splitSentences(kit.templates.coldOutreach.body).find(
+      (sentence) => wordCount(sentence) > sentenceLimit,
+    );
+
+    if (longSentence) {
+      flags.push(
+        `Cold outreach has a sentence over ${sentenceLimit} words (${wordCount(longSentence)}): "${truncate(longSentence)}"`,
+      );
+    }
+  }
+
+  return flags;
+}
 
 const surfaceRules = (
   title: string,
@@ -11,6 +94,7 @@ const surfaceRules = (
 ].join("\n");
 
 export function exportToMarkdown(kit: BrandKit): string {
+  const qaFlags = draftQaFlags(kit);
   const sections = [
     ["## Context", kit.context.beforeAfter].join("\n\n"),
     ["## Enemy", kit.enemy].join("\n\n"),
@@ -31,6 +115,12 @@ export function exportToMarkdown(kit: BrandKit): string {
       "## ICP",
       "### Primary signals",
       bulletList(kit.icp.primary.signals),
+      ...(kit.icp.badFitSignals?.length
+        ? [
+            "### Anti-signals",
+            bulletList(kit.icp.badFitSignals),
+          ]
+        : []),
       ...(kit.icp.secondary
         ? [
             "### Secondary ICP",
@@ -113,6 +203,9 @@ export function exportToMarkdown(kit: BrandKit): string {
       surfaceRules("Cases", kit.rules.cases),
       surfaceRules("Visual", kit.rules.visual),
     ].join("\n\n"),
+    ...(qaFlags.length
+      ? [["## Draft QA flags", bulletList(qaFlags)].join("\n\n")]
+      : []),
   ];
 
   return sections.join("\n\n").trim();

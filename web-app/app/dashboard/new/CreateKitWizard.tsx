@@ -152,7 +152,7 @@ export function CreateKitWizard() {
     <main className="container-brand min-h-screen py-10 sm:py-14">
       <header className="border-b border-rule pb-8 sm:pb-10">
         <p className="eyebrow mb-4 block">New brand kit / guided kickoff</p>
-        <h1 className="max-w-[14ch] font-display text-[clamp(2.4rem,5vw,4.5rem)] font-semibold leading-[0.95] tracking-tightest text-ink">
+        <h1 className="max-w-[14ch] font-display text-4xl font-semibold leading-tight text-ink sm:text-6xl">
           Start fast. Build the real kit as you go.
         </h1>
         <p className="mt-5 max-w-[62ch] text-base text-muted-strong sm:text-lg">
@@ -222,7 +222,7 @@ export function CreateKitWizard() {
                       Selected
                     </p>
                   </div>
-                  <h2 className="font-display text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+            <h2 className="font-display text-2xl font-semibold text-ink sm:text-3xl">
                     {opt.title}
                   </h2>
                   <p className="mt-3 flex-1 text-sm text-muted-strong sm:text-base">
@@ -321,7 +321,7 @@ export function CreateKitWizard() {
           <p className="font-mono text-xs uppercase tracking-widest text-accent">
             What the founder sees
           </p>
-          <h2 className="mt-3 max-w-[16ch] font-display text-3xl font-semibold tracking-tight text-ink">
+                  <h2 className="mt-3 max-w-[16ch] font-display text-3xl font-semibold text-ink">
             A guided brand conversation, not an operator console.
           </h2>
           <div className="mt-6 space-y-4 border-t border-rule pt-5 text-sm text-muted-strong">

@@ -6,6 +6,10 @@ const fixture: BrandKit = {
   id: "kit_123",
   ownerId: "user_123",
   status: "draft",
+  brandStage: "existing",
+  experienceMode: "guided",
+  draftCheckpoint: "final",
+  inspirationItems: [],
   createdAt: new Date("2026-04-08T10:00:00.000Z"),
   updatedAt: new Date("2026-04-08T10:30:00.000Z"),
   stageProgress: {
@@ -60,6 +64,10 @@ const fixture: BrandKit = {
         "They have already tried tooling without changing behavior.",
       ],
     },
+    badFitSignals: [
+      "They ask for AI ideas without naming an owner.",
+      "They want a vendor to own the process forever.",
+    ],
     secondary: {
       role: "Head of Revenue Operations",
       signals: [
@@ -332,6 +340,13 @@ describe("exportToMarkdown", () => {
     expect(md).toContain(`Cost: ${fixture.antiPositioning[0].cost}`);
   });
 
+  it("renders bad-fit ICP signals when present", () => {
+    const md = exportToMarkdown(fixture);
+
+    expect(md).toContain("### Anti-signals");
+    expect(md).toContain(fixture.icp.badFitSignals?.[0]);
+  });
+
   it("renders the palette with hex values", () => {
     const md = exportToMarkdown(fixture);
 
@@ -345,5 +360,37 @@ describe("exportToMarkdown", () => {
     expect(md).toContain("### Outreach");
     expect(md).toContain(fixture.rules.outreach[0].rule);
     expect(md).toContain(fixture.rules.visual[0].reason);
+  });
+
+  it("flags template sentences that violate the kit writing rules", () => {
+    const md = exportToMarkdown({
+      ...fixture,
+      templates: {
+        ...fixture.templates,
+        coldOutreach: {
+          ...fixture.templates.coldOutreach,
+          body:
+            "This sentence deliberately keeps running past the promised sentence limit because the generator must catch templates that violate their own voice rules.",
+        },
+      },
+    });
+
+    expect(md).toContain("## Draft QA flags");
+    expect(md).toContain("Cold outreach has a sentence over 18 words");
+  });
+
+  it("flags forbidden generic words in the context", () => {
+    const md = exportToMarkdown({
+      ...fixture,
+      context: {
+        beforeAfter:
+          "We used to sell documents. Now we unlock digital transformation for teams that need clearer operating choices.",
+      },
+    });
+
+    expect(md).toContain("## Draft QA flags");
+    expect(md).toContain("Context uses forbidden generic words");
+    expect(md).toContain("unlock");
+    expect(md).toContain("transformation");
   });
 });

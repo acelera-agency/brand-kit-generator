@@ -22,6 +22,10 @@ const completeKit: StoredKitData = {
         "They have a clear revenue number but no clear positioning",
       ],
     },
+    badFitSignals: [
+      "They want a cheap supplier to fill headcount.",
+      "They ask for slides before discussing decisions.",
+    ],
     secondary: {
       role: "Startup founder",
       signals: ["Pre-seed or seed stage", "Building first GTM motion"],
@@ -114,6 +118,7 @@ describe("buildV0SitePrompt", () => {
   it("includes ICP signals in system", () => {
     const { system } = buildV0SitePrompt(completeKit);
     expect(system).toContain("we've tried agencies before");
+    expect(system).toContain("cheap supplier to fill headcount");
     expect(system).toContain("Startup founder");
   });
 
@@ -194,7 +199,7 @@ describe("buildV0SitePrompt", () => {
           ctaVariants: ["Go"],
         },
       },
-    };
+    } as StoredKitData;
     const result = buildV0SitePrompt(minimal);
     expect(result.system.length).toBeGreaterThan(100);
     expect(result.message).toContain("Test Headline");

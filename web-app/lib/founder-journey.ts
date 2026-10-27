@@ -19,32 +19,32 @@ export type FounderStageConfig = {
 
 export const FOUNDER_STAGE_CONFIG: Record<StageId, FounderStageConfig> = {
   stage_0: {
-    milestone: "Why this brand now",
-    title: "Give the brand a real reason to exist",
+    milestone: "First signal",
+    title: "Start with the contradiction",
     intro:
-      "Start with the contradiction: what is broken now, what changed, and why this brand needs to exist now instead of staying an idea.",
+      "One clear answer is enough to start the live v0 draft.",
     helper:
-      "Think in real tensions, not category labels. What became unacceptable enough that you decided to build or rework the brand?",
+      "Write the broken way, what changed, and why now. v0 will start from this signal.",
     fields: [
       {
         key: "before",
         label: "What is the old or broken way?",
         placeholder:
-          "Describe the version of the category, offer, or story that no longer works.",
+          "The old way buyers are tired of, or the story your market no longer believes.",
         rows: 3,
       },
       {
         key: "shift",
         label: "What changed?",
         placeholder:
-          "What happened in the market, in your company, or in your conviction that made this feel insufficient?",
+          "The market shift, customer pressure, or founder conviction that makes the old way insufficient.",
         rows: 3,
       },
       {
         key: "now",
         label: "Why does this brand have to exist now?",
         placeholder:
-          "Write the strongest plain-language reason this brand needs to be real now.",
+          "The plain-language reason this brand should exist now, not later.",
         rows: 3,
       },
     ],

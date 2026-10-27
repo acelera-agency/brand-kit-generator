@@ -27,6 +27,7 @@ type GenerationRow = {
   id: string;
   v0_chat_id: string | null;
   generation_settings?: Record<string, unknown> | null;
+  generation_mode?: "progressive" | "final";
 };
 
 function serializeIteration(iteration: IterationRow) {
@@ -82,8 +83,9 @@ export async function GET(
 
   const { data: generation } = await svc
     .from("site_generations")
-    .select("id, v0_chat_id, generation_settings")
+    .select("id, v0_chat_id, generation_settings, generation_mode")
     .eq("id", iteration.generation_id)
+    .eq("generation_mode", "final")
     .maybeSingle<GenerationRow>();
 
   if (!generation) {

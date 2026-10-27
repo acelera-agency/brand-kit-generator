@@ -30,6 +30,22 @@ export function IcpSection({ data, kitId }: Props) {
         </ul>
       </div>
 
+      {data.badFitSignals?.length ? (
+        <div className="rounded-lg border border-rule bg-paper p-6 sm:p-8 mb-6">
+          <p className="font-mono text-[10px] uppercase tracking-widest text-muted mb-2">
+            Anti-signals
+          </p>
+          <ul className="mt-4 space-y-3">
+            {data.badFitSignals.map((signal, idx) => (
+              <li key={idx} className="flex gap-3 items-start">
+                <span className="mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-muted" />
+                <span className="text-base text-ink">{signal}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       {data.secondary && data.secondary.signals?.length ? (
         <div className="rounded-lg border border-rule bg-paper-pure p-6 sm:p-8">
           <p className="font-mono text-[10px] uppercase tracking-widest text-muted mb-2">

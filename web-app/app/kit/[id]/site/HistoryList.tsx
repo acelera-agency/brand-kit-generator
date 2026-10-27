@@ -33,7 +33,7 @@ export function HistoryList({
         <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted">
           History
         </p>
-        <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight text-ink">
+        <h2 className="mt-3 font-display text-2xl font-semibold text-ink">
           Iteration timeline
         </h2>
       </div>
